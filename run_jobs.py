@@ -1,6 +1,6 @@
 import os
-batch_str = """
-#!/bin/bash -l
+batch_str =\
+"""#!/bin/bash -l
 # Standard output and error:
 #SBATCH -o ./tjob.out.{nprocs}.%j
 #SBATCH -e ./tjob.err.{nprocs}.%j

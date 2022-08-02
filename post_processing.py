@@ -40,7 +40,7 @@ for i1,p in enumerate(problems):
     newT = []
     for i2,nc in enumerate(ncells):
         for i3,d in enumerate(degrees):
-            newT.append(["nc ={} ** 3 , p = {} ** 3".format(nc,d)] +  T[i2*len(ncells)+i3])
+            newT.append(["nc = {} ** 3 , p = {} ** 3".format(nc,d)] +  T[i2*len(ncells)+i3])
         newT.append(["   "]*len(T[0]))
     
     print(tabulate(newT, headers=headers, tablefmt="grid"))

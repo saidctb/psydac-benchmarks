@@ -1,4 +1,5 @@
 import os
+
 batch_str =\
 """#!/bin/bash -l
 # Standard output and error:
@@ -44,8 +45,12 @@ for nn in nnodes:
                 batch_script += script_nc_d.format(filename=f, nc=nc, d=d)
             
             batch_script += '\n'
-    with open('job_{nprocs}.sh'.format(nprocs=nn*ntasks_per_node),'w') as f:
+
+    filename = 'job_{nprocs}.sh'.format(nprocs=nn*ntasks_per_node)
+    with open(filename,'w') as f:
         f.write(batch_script)
+
+    os.system('sbatch {}'.format(filename))
     
 
     

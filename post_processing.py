@@ -3,10 +3,8 @@ import numpy as np
 results_folder = 'results/'
 problems = ['poisson_3d','vector_poisson_3d','time_harmonic_maxwell_3d']
 ncells   = [32,64,128,256]
-ncells   = [10,20,40,80]
 degrees  = [2,3,4,5]
 number_of_mpi_procs = [1*32,2*32,4*32,8*32,16*32,32*32,64*32,128*32]
-number_of_mpi_procs = [1,2,4]
 number_of_threads = 1
 
 timmings_bi_assembly    = np.zeros((len(problems), len(ncells),len(degrees), len(number_of_mpi_procs)))

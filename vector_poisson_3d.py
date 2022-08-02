@@ -27,7 +27,8 @@ def remove_folder(path):
 
 def run_vector_poisson_3d(solution, f, ncells, degree, backend):
 
-    backend['folder'] = "vector_poisson_3d_psydac_{}_{}".format(ncells[0], comm.size)
+    backend['folder'] = "vector_poisson_3d_psydac_{}_{}_{}".format(ncells[0], degree[0], comm.size)
+    backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math"
 
     # ... abstract model
     domain = Cube()
@@ -72,7 +73,12 @@ def run_vector_poisson_3d(solution, f, ncells, degree, backend):
     h1norm_h = discretize(h1norm, domain_h, Vh, backend=backend)
     # ...
 
-    if comm.rank == 0: remove_folder(backend['folder'])
+    if comm.rank == 0:
+        try:
+            remove_folder(backend['folder'])
+        except:
+            pass
+    comm.Barrier()
 
     setup_time2 = time()
     T = comm.reduce(setup_time2-setup_time1,op=MPI.MAX)

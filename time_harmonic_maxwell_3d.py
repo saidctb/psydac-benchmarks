@@ -29,7 +29,8 @@ def remove_folder(path):
 
 def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
 
-    backend['folder'] = "time_harmonic_3d_psydac_{}_{}".format(ncells[0], comm.size)
+    backend['folder'] = "time_harmonic_3d_psydac_{}_{}_{}".format(ncells[0], degree[0], comm.size)
+    backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math"
 
     # ... abstract model
     domain = Cube('A')
@@ -68,7 +69,12 @@ def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
 
     l2_norm_h = discretize(l2norm, domain_h, Vh, backend=backend)
 
-    if comm.rank == 0: remove_folder(backend['folder'])
+    if comm.rank == 0:
+        try:
+            remove_folder(backend['folder'])
+        except:
+            pass
+    comm.Barrier()
 
     setup_time2 = time()
     T = comm.reduce(setup_time2-setup_time1,op=MPI.MAX)

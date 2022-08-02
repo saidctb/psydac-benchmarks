@@ -2,6 +2,7 @@
 from time import time
 setup_time1 = time()
 import os
+import shutil
 import numpy as np
 
 from mpi4py import MPI
@@ -20,7 +21,13 @@ from psydac.api.settings       import PSYDAC_BACKEND_GPYCCEL
 
 x,y,z = symbols('x1, x2, x3')
 comm = MPI.COMM_WORLD
-def run_vector_poisson_3d(solution, f, ncells, degree, backend=None):
+
+def remove_folder(path):
+    shutil.rmtree(path)
+
+def run_vector_poisson_3d(solution, f, ncells, degree, backend):
+
+    backend['folder'] = "vector_poisson_3d_psydac_{}_{}".format(ncells[0], comm.size)
 
     # ... abstract model
     domain = Cube()
@@ -64,6 +71,8 @@ def run_vector_poisson_3d(solution, f, ncells, degree, backend=None):
     l2norm_h = discretize(l2norm, domain_h, Vh, backend=backend)
     h1norm_h = discretize(h1norm, domain_h, Vh, backend=backend)
     # ...
+
+    if comm.rank == 0: remove_folder(backend['folder'])
 
     setup_time2 = time()
     T = comm.reduce(setup_time2-setup_time1,op=MPI.MAX)

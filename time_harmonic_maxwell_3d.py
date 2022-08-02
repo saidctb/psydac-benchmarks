@@ -2,6 +2,7 @@
 from time import time
 setup_time1 = time()
 import os
+import shutil
 import numpy as np
 
 from mpi4py import MPI
@@ -22,8 +23,13 @@ from psydac.api.settings       import PSYDAC_BACKEND_GPYCCEL
 
 x,y,z    = symbols('x1, x2, x3')
 comm = MPI.COMM_WORLD
-    
-def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend=None):
+
+def remove_folder(path):
+    shutil.rmtree(path)
+
+def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
+
+    backend['folder'] = "time_harmonic_3d_psydac_{}_{}".format(ncells[0], comm.size)
 
     # ... abstract model
     domain = Cube('A')
@@ -61,6 +67,8 @@ def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend=None):
     equation_h  = discretize(equation, domain_h, [Vh, Vh], backend=backend)
 
     l2_norm_h = discretize(l2norm, domain_h, Vh, backend=backend)
+
+    if comm.rank == 0: remove_folder(backend['folder'])
 
     setup_time2 = time()
     T = comm.reduce(setup_time2-setup_time1,op=MPI.MAX)

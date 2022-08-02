@@ -24,6 +24,9 @@ module load anaconda/3/2020.02 mpi4py/3.0.3
 
 # Run the program:
 
+export OMPI_MCA_mpi_warn_on_fork=0
+export OMPI_MCA_mpi_yield_when_idle=1
+
 """
 
 filenames       = ['poisson_3d', 'vector_poisson_3d', 'time_harmonic_maxwell_3d']

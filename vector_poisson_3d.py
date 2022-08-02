@@ -73,6 +73,7 @@ def run_vector_poisson_3d(solution, f, ncells, degree, backend):
     h1norm_h = discretize(h1norm, domain_h, Vh, backend=backend)
     # ...
 
+    comm.Barrier()
     if comm.rank == 0:
         try:
             remove_folder(backend['folder'])

@@ -69,6 +69,7 @@ def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
 
     l2_norm_h = discretize(l2norm, domain_h, Vh, backend=backend)
 
+    comm.Barrier()
     if comm.rank == 0:
         try:
             remove_folder(backend['folder'])

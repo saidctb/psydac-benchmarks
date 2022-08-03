@@ -37,11 +37,11 @@ headers = [""] + [str(np) for np in number_of_mpi_procs]
 for i1,p in enumerate(problems):
     if all(np.isnan(v) for v in timmings_bi_assembly[i1].flatten()):continue
     print("="*45,"Timings of the Matrix Assembly of {}".format(p), "="*45)
-    T = np.around(timmings_bi_assembly[i1], decimals=5).reshape((len(ncells)*len(degrees), len(number_of_mpi_procs))).tolist()
+    T = np.around(timmings_bi_assembly[i1], decimals=5)
     newT = []
     for i2,nc in enumerate(ncells):
         for i3,d in enumerate(degrees):
-            newT.append(["nc = {} ** 3 , p = {}".format(nc,d)] +  T[i2*len(ncells)+i3])
+            newT.append(["nc = {} ** 3 , p = {}".format(nc,d)] +  T[i2,i3].tolist())
         newT.append(["   "]*len(T[0]))
     
     print(tabulate(newT, headers=headers, tablefmt="grid"))

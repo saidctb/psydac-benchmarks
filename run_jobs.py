@@ -30,31 +30,29 @@ export OMPI_MCA_mpi_yield_when_idle=1
 """
 
 filenames       = ['poisson_3d', 'vector_poisson_3d', 'time_harmonic_maxwell_3d']
-nnodes          = [1,2,4,8,16,32,64,128]
-ntasks_per_node = 32
-ncells          = [32,64,128,256]
+nnodes          = [1,2,2**2,2**3,2**4,2**5,2**6,2**7]
+ntasks_per_node = 2**5
+ncells          = [64,96,128,160,192,256]
 degrees         = [2,3,4,5]
 
 script_nc_d = 'srun python3 {filename}.py -n {nc} {nc} {nc} -d {d} {d} {d}\n'
 
 os.makedirs('results', exist_ok=True)
-
-for nn in nnodes:
-    batch_script = batch_str.format(nprocs=nn*ntasks_per_node,nnodes=nn,ntasks_per_node=ntasks_per_node, mem=150000,time_limit="6:00:00")
-
-    for f in filenames:
+for f in filenames:
+    for nn in nnodes:
+        batch_script = batch_str.format(nprocs=nn*ntasks_per_node,nnodes=nn,ntasks_per_node=ntasks_per_node, mem=150000,time_limit="6:00:00")
         for nc in ncells:
             for d in degrees:
                 batch_script += script_nc_d.format(filename=f, nc=nc, d=d)
             
             batch_script += '\n'
 
-    filename = 'job_{nprocs}.sh'.format(nprocs=nn*ntasks_per_node)
-    with open(filename,'w') as f:
-        f.write(batch_script)
+        filename = 'job_{filename}_{nprocs}.sh'.format(filename=f, nprocs=nn*ntasks_per_node)
+        with open(filename,'w') as script:
+            script.write(batch_script)
 
-    os.system('sbatch {}'.format(filename))
-    
+        os.system('sbatch {}'.format(filename))
+        
 
     
     

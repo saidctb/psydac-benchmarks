@@ -3,12 +3,12 @@ import os
 batch_str =\
 """#!/bin/bash -l
 # Standard output and error:
-#SBATCH -o ./tjob.out.{nprocs}.%j
-#SBATCH -e ./tjob.err.{nprocs}.%j
+#SBATCH -o ./tjob.out.{filename}.{nprocs}.%j
+#SBATCH -e ./tjob.err.{filename}.{nprocs}.%j
 # Initial working directory:
 #SBATCH -D ./
 # Job Name:
-#SBATCH -J job_{nprocs}
+#SBATCH -J job_{filename}_{nprocs}
 #
 # Number of nodes and MPI tasks per node:
 #SBATCH --nodes={nnodes}
@@ -40,7 +40,7 @@ script_nc_d = 'srun python3 {filename}.py -n {nc} {nc} {nc} -d {d} {d} {d}\n'
 os.makedirs('results', exist_ok=True)
 for f in filenames:
     for nn in nnodes:
-        batch_script = batch_str.format(nprocs=nn*ntasks_per_node,nnodes=nn,ntasks_per_node=ntasks_per_node, mem=150000,time_limit="6:00:00")
+        batch_script = batch_str.format(filename=f, nprocs=nn*ntasks_per_node,nnodes=nn,ntasks_per_node=ntasks_per_node, mem=150000,time_limit="6:00:00")
         for nc in ncells:
             for d in degrees:
                 batch_script += script_nc_d.format(filename=f, nc=nc, d=d)
@@ -48,8 +48,8 @@ for f in filenames:
             batch_script += '\n'
 
         filename = 'job_{filename}_{nprocs}.sh'.format(filename=f, nprocs=nn*ntasks_per_node)
-        with open(filename,'w') as script:
-            script.write(batch_script)
+        with open(filename,'w') as file_:
+            file_.write(batch_script)
 
         os.system('sbatch {}'.format(filename))
         

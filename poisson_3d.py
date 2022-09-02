@@ -179,6 +179,7 @@ def test_poisson_3d(mapping, analytical, ncells, degree):
     solution = sin(pi*x)*sin(pi*y)*sin(pi*z)
     f        = 3*pi**2*sin(pi*x)*sin(pi*y)*sin(pi*z)
 
+    mapping = mapping[0]
     if analytical:
         if mapping == 'identity':
             domain = Cube()
@@ -242,7 +243,7 @@ def parse_input_arguments():
     parser.add_argument( '-m',
         type    = str,
         nargs   = 1,
-        default = 'identity',
+        default = ['identity'],
         dest    = 'mapping',
         help    = 'mapping'
     )

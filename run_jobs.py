@@ -29,11 +29,11 @@ export OMPI_MCA_mpi_yield_when_idle=1
 
 """
 
-filenames       = ['poisson_3d', 'vector_poisson_3d', 'time_harmonic_maxwell_3d']
-mappings        = [[['identity', True],['identity', False], ['quarter_annulus', True], ['quarter_annulus', False]],[['identity', True]],[['identity', True]]]
+filenames       = ['maxwell3d']
+mappings        = [[['identity', True]]]
 nnodes          = [1,2,2**2,2**3,2**4,2**5,2**6,2**7]
-ntasks_per_node = 2**5
-ncells          = [64,96,128,160,192,256]
+ntasks_per_node = 35
+ncells          = [64,96,128,160,192,224]
 degrees         = [2,3,4,5]
 
 script_nc_d = 'srun python3 {filename}.py -n {nc} {nc} {nc} -d {d} {d} {d} {mapping}\n'
@@ -45,7 +45,7 @@ os.makedirs('results', exist_ok=True)
 
 for mapping,f in zip(mappings,filenames):
     for ea in mapping:
-        mapp = '-m ' + ea[0]+(' -a' if ea[1] else '')
+        mapp = '-m ' + ea[0]+(' --a' if ea[1] else '')
         mapp_name = ea[0] + (('_'+'analytical') if ea[1] else '')
 
         for nn in nnodes:

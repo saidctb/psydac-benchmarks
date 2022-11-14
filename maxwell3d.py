@@ -302,21 +302,21 @@ def parse_input_arguments():
         help    = 'Number of grid cells (elements) along each dimension'
     )
 
-    parser.add_argument( '-ns',
-        type    = int,
-        default = 1,
-        dest    = 'NSTEPS',
-        metavar = 'NSTEPS',
-        help    = 'Number of time-steps to be taken'
-    )
+#    parser.add_argument( '-ns',
+#        type    = int,
+#        default = 10,
+#        dest    = 'NSTEPS',
+#        metavar = 'NSTEPS',
+#        help    = 'Number of time-steps to be taken'
+#    )
 
-    parser.add_argument( '-T',
-        type    = float,
-        dest    = 'END_TIME',
-        metavar = 'END_TIME',
-        help    = 'Run simulation until given final time'
-    )
-    # ...
+#    parser.add_argument( '-T',
+#        type    = float,
+#        dest    = 'END_TIME',
+#        metavar = 'END_TIME',
+#        help    = 'Run simulation until given final time'
+#    )
+#    # ...
 
     parser.add_argument( '-s',
         action  = 'store_true',
@@ -387,8 +387,8 @@ if __name__ == '__main__':
     degree = args['degree']
 
     #time parameters
-    niter = args['NSTEPS']
-    T     = float(args['END_TIME'])
+    niter = 100
+    T     = 1.
     dt = T/niter
 
     comm  = MPI.COMM_WORLD

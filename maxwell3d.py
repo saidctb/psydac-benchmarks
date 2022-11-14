@@ -324,6 +324,17 @@ def parse_input_arguments():
         help    = 'Save output files'
     )
 
+    parser.add_argument('--a', action='store_true', \
+                       help='Use analytical mapping.', \
+                       dest='analytical')
+
+    parser.add_argument( '-m',
+        type    = str,
+        nargs   = 1,
+        default = ['identity'],
+        dest    = 'mapping',
+        help    = 'mapping'
+    )
     return parser.parse_args()
     
 

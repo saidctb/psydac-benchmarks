@@ -13,10 +13,11 @@ from sympde.calculus import grad, dot
 from sympde.topology import ScalarFunctionSpace
 from sympde.topology import element_of
 from sympde.topology import NormalVector
-from sympde.topology import Cube
+from sympde.topology import Cube, Domain
 from sympde.expr     import BilinearForm, LinearForm, integral
 from sympde.expr     import Norm
 from sympde.expr     import find, EssentialBC
+from sympde.topology.analytical_mapping import SphericalMapping
 
 from psydac.api.discretization import discretize
 from psydac.api.settings       import PSYDAC_BACKEND_GPYCCEL
@@ -27,14 +28,15 @@ comm = MPI.COMM_WORLD
 def remove_folder(path):
     shutil.rmtree(path)
 
-def run_poisson_3d(solution, f, ncells, degree, backend):
+def run_poisson_3d(mapping, domain, solution, f, filename=None, ncells=None, degree=None, backend=None):
 
-    backend['folder'] = "poisson_3d_psydac_{}_{}_{}".format(ncells[0], degree[0], comm.size)
+
+    backend['folder'] = "poisson_3d_psydac_{}_{}_{}_{}".format(ncells[0], degree[0], comm.size, filename is None)
     backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math"
+
     #+++++++++++++++++++++++++++++++
     # 1. Abstract model
     #+++++++++++++++++++++++++++++++
-    domain = Cube()
 
     B_dirichlet_0 = domain.boundary
 
@@ -48,7 +50,7 @@ def run_poisson_3d(solution, f, ncells, degree, backend):
     # Linear form l: V --> R
     l = LinearForm(v, integral(domain, f * v))
 
-    bc = [EssentialBC(u, 0, domain.boundary)]
+    bc = [EssentialBC(u, solution, domain.boundary)]
 
     # Variational model
     equation = find(u, forall=v, lhs=a(u, v), rhs=l(v), bc=bc)
@@ -61,11 +63,16 @@ def run_poisson_3d(solution, f, ncells, degree, backend):
     # 2. Discretization
     #+++++++++++++++++++++++++++++++
 
-    # Create computational domain from topological domain
-    domain_h = discretize(domain, ncells=ncells, comm=MPI.COMM_WORLD)
-
-    # Discrete spaces
-    Vh = discretize(V, domain_h, degree=degree)
+    if filename is None:
+        # Create computational domain from topological domain
+        domain_h = discretize(domain, ncells=ncells, comm=MPI.COMM_WORLD)
+        # Discrete spaces
+        Vh = discretize(V, domain_h, degree=degree)
+    else:
+        # Create computational domain from topological domain
+        domain_h = discretize(domain, filename=filename, comm=MPI.COMM_WORLD)
+        # Discrete spaces
+        Vh = discretize(V, domain_h)
 
     # Discretize equation using Dirichlet bc
     equation_h = discretize(equation, domain_h, [Vh, Vh], backend=backend)
@@ -160,19 +167,43 @@ def run_poisson_3d(solution, f, ncells, degree, backend):
     infos['h1_error'] = h1_error
 
     if comm.rank == 0:
-        name = (infos['title'],) + infos['ncells'] + infos['degree'] + (comm.size, infos['number_of_threads'])
+        name = (infos['title'], mapping) + (('geof',) if filename else ()) + infos['ncells'] + infos['degree'] + (comm.size, infos['number_of_threads'])
         name = '_'.join([str(i) for i in name])
         np.save('results/' + name, infos)
 
 #==============================================================================
 # 3D Poisson's equation
 #==============================================================================
-def test_poisson_3d(ncells, degree):
+def test_poisson_3d(mapping, analytical, ncells, degree):
 
     solution = sin(pi*x)*sin(pi*y)*sin(pi*z)
     f        = 3*pi**2*sin(pi*x)*sin(pi*y)*sin(pi*z)
 
-    run_poisson_3d(solution, f, ncells=ncells, degree=degree, backend=PSYDAC_BACKEND_GPYCCEL)
+    mapping = mapping[0]
+    if analytical:
+        if mapping == 'identity':
+            domain = Cube()
+        elif mapping == 'quarter_annulus':
+            r_in    = 1.0
+            r_out   = 4.0
+            A       = Cube('A', bounds1=(r_in, r_out), bounds2=(0, np.pi), bounds3=(0, np.pi/2))
+            Mapping = SphericalMapping('M', 3)
+            domain = Mapping(A)
+        else:
+            raise NotImplementedError("mapping is not available")
+
+        filename=None
+    else:
+        if mapping == 'identity':
+            filename = "mesh/identity_{nc}_{d}.h5".format(nc=ncells[0], d=degree[0])
+        elif mapping == 'quarter_annulus':
+            filename == "mesh/quarter_annulus_{nc}_{d}.h5".format(nc=ncells[0], d=degree[0])
+        else:
+            raise NotImplementedError("mapping is not available")
+
+        domain = Domain.from_file(filename)
+
+    run_poisson_3d(mapping, domain, solution, f, filename=filename ,ncells=ncells, degree=degree, backend=PSYDAC_BACKEND_GPYCCEL)
 
 
 #==============================================================================
@@ -205,7 +236,17 @@ def parse_input_arguments():
         help    = 'Number of grid cells (elements) along each dimension'
     )
 
+    parser.add_argument('--a', action='store_true', \
+                       help='Use analytical mapping.', \
+                       dest='analytical')
 
+    parser.add_argument( '-m',
+        type    = str,
+        nargs   = 1,
+        default = ['identity'],
+        dest    = 'mapping',
+        help    = 'mapping'
+    )
     return parser.parse_args()
 
 #==============================================================================

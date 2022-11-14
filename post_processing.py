@@ -1,11 +1,12 @@
 import numpy as np
 
+
 results_folder = 'results/'
 problems = ['poisson_3d','vector_poisson_3d','time_harmonic_maxwell_3d']
 mappings = [[['identity', True],['identity', False], ['quarter_annulus', True], ['quarter_annulus', False]],[['identity', True]],[['identity', True]]]
-ncells   = [10,96,128,160,192,256]
+ncells   = [64,96,128,160,192,256]
 degrees  = [2,3,4,5]
-number_of_mpi_procs = [1,1*32,2*32,4*32,8*32,16*32,32*32,64*32,128*32]
+number_of_mpi_procs = [1*32,2*32,4*32,8*32,16*32,32*32,64*32,128*32]
 number_of_threads = 1
 
 timmings_bi_assembly   = np.zeros((len(problems), max(len(mapping) for mapping in mappings), len(ncells),len(degrees), len(number_of_mpi_procs)))

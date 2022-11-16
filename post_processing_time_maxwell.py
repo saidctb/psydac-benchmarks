@@ -15,7 +15,7 @@ scaling_dot_p        = timmings_dot_p.copy()
 for i1,nc in enumerate(ncells):
     for i2,d in enumerate(degrees):
         for i3, mpi_p in enumerate(number_of_mpi_procs):
-            names = (p,) + (nc,)*3 +(d,)*3 + (mpi_p, number_of_threads)
+            names = ('maxwell_3d',) + (nc,)*3 +(d,)*3 + (mpi_p, number_of_threads)
             filename = '_'.join([str(i) for i in names])
             try:
                 T = np.load(results_folder+filename+'.npy', allow_pickle=True)

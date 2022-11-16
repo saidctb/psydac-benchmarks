@@ -142,7 +142,7 @@ def run_model(ncells, degree, comm=None, store=None):
     h2norm_h = discretize(h2norm, Omega_h, Vh, backend=PSYDAC_BACKEND_GPYCCEL)
 
     # Solve discrete equation to obtain finite element coefficients
-    equation_h.set_solver(solver='cg' ,tol=1e-14, maxiter=10000, info=True)
+    equation_h.set_solver(solver='cg' ,tol=1e-14, maxiter=10**10, info=True)
     u_h,info = equation_h.solve()
 
     # Compute error norms from solution field
@@ -159,7 +159,7 @@ def run_model(ncells, degree, comm=None, store=None):
         output_m.set_static()
         output_m.export_fields(u=u_h)
         output_m.close()
-    return l2_error, h1_error, h2_error
+    return l2_error, h1_error, h2_error, info
 
 #==============================================================================
 def parse_input_arguments():
@@ -206,13 +206,14 @@ def main(degree, ncells, store=False):
     rank = comm.rank
 
     construct_mapping(ncells, degree, comm)
-    l2_error, h1_error, h2_error = run_model(ncells, degree, comm, store=store)
+    l2_error, h1_error, h2_error, info = run_model(ncells, degree, comm, store=store)
 
     if rank == 0:
         print()
         print('L2 error = {}'.format(l2_error))
         print('H1 error = {}'.format(h1_error))
         print('H2 error = {}'.format(h2_error))
+        print('CG info  = {}'.format(info))
         print(flush=True)
 
     if comm:

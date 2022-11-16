@@ -29,6 +29,7 @@ def run_hcurl_projector(ncells, degree, comm):
     infos['ncells'] = tuple(ncells)
     infos['degree'] = tuple(degree)
  
+    comm.Barrier()
     t0 = time()
     P1 = Projector_Hcurl(Vh)
     b  = BlockVector(Vh.vector_space)
@@ -38,6 +39,7 @@ def run_hcurl_projector(ncells, degree, comm):
 
     infos['matrix_assembly'] = tt
 
+    comm.Barrier()
     t0 = time()
     P1._solver.solve(b)
     t1 = time()

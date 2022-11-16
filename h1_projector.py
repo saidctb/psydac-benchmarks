@@ -33,6 +33,7 @@ def run_h1_projector(ncells, degree, comm):
     infos['ncells'] = tuple(ncells)
     infos['degree'] = tuple(degree)
  
+    comm.Barrier()
     t0 = time()
     P0 = Projector_H1(Vh)
     b  = StencilVector(Vh.vector_space)
@@ -42,6 +43,7 @@ def run_h1_projector(ncells, degree, comm):
     
     infos['matrix_assembly'] = tt
 
+    comm.Barrier()
     t0 = time()
     P0._solver.solve(b)
     t1 = time()

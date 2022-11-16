@@ -92,7 +92,7 @@ def splitting_integrator_sp(e0, bhalf, M1, M2, R1, R2, S1, S2, R1_b, BC, J, dt, 
     return e_history, b_history
 
 #===============================================================================
-def splitting_integrator(e0, bhalf, M1, M2, R1, R2, S1, S2, R1_b, BC, J, dt, niter, Vh, l2norm_h,cg_niter):
+def splitting_integrator(e0, bhalf, M1, M2, R1, R2, dt, niter, Vh, l2norm_h,cg_niter):
 
     e_history = [e0]
     b_history = [bhalf]
@@ -102,10 +102,10 @@ def splitting_integrator(e0, bhalf, M1, M2, R1, R2, S1, S2, R1_b, BC, J, dt, nit
         e = e_history[ts]
         b = b_history[ts]
 
-        y1    = dt * (R1.dot(b)  -R1_b.dot(b) +J(t=t+dt/2) + S1.dot(b))
+        y1    = dt*(R1.dot(b))
         e_new = e + cg(M1, y1, tol=1e-15, maxiter=cg_niter)[0]
 
-        y2    = dt *(-R2.dot(e_new) - S2.dot(e_new))
+        y2    = dt * (R2.dot(e_new))
         b_new = b + cg(M2, y2, tol=1e-15, maxiter=cg_niter)[0]
 
         e_history.append(e_new)
@@ -140,9 +140,8 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
 
     # Bilinear form a: V x V --> R
     a1 = BilinearForm((E,TE), integral(domain, dot(E, TE)))
-    a2 = BilinearForm((E,TE), integral(domain, dot(E, curl(TE))))
-    a3 = BilinearForm((E,TE), integral(I, expr_I))
-    a4 = BilinearForm((E,TE), integral(boundary, expr_b))
+    a2 = BilinearForm((E,TE), integral(domain, dot(E, curl(TE)))- integral(boundary, expr_b) + integral(I, expr_I))
+    a3 = BilinearForm((E,TE), -integral(domain, dot(E, curl(TE)))- integral(I, expr_I))
 
     l1 = LinearForm(TE, integral(domain, dot(Eex, TE)))
     l2 = LinearForm(TE, integral(domain, dot(Bex, TE)))
@@ -160,7 +159,6 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
     a1_h = discretize(a1, domain_h, [Vh, Vh], backend=backend)
     a2_h = discretize(a2, domain_h, [Vh, Vh], backend=backend)
     a3_h = discretize(a3, domain_h, [Vh, Vh], backend=backend)
-    a4_h = discretize(a4, domain_h, [Vh, Vh], backend=backend)
 
     l1_h = discretize(l1, domain_h, Vh, backend=backend)
     l2_h = discretize(l2, domain_h, Vh, backend=backend)
@@ -196,12 +194,7 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
     M1 = a1_h.assemble()
     M2 = M1
     R1 = a2_h.assemble()
-    R2 = R1
-    S1 = a3_h.assemble()
-    S2 = S1
-    R1_b = a4_h.assemble()
-    BC   = lambda t: l4_h.assemble(t=t)
-    J_h  = lambda t:l3_h.assemble(t=t)
+    R2 = a3_h.assemble()
     t2 = time()
 
     tt = comm.reduce(t2-t1,op=MPI.MAX)
@@ -209,8 +202,8 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
     # store bilinear forms assembly timing
     infos['bilinear_form_assembly_time'] = tt
 
-    e0    = cg(M1, l1_h.assemble(t=0.), tol=1e-1, maxiter=1)[0]
-    bhalf = cg(M2, l2_h.assemble(t=dt/2), tol=1e-1, maxiter=1)[0]
+    e0    = cg(M1, l1_h.assemble(t=0.), tol=1e-1, maxiter=10)[0]
+    bhalf = cg(M2, l2_h.assemble(t=dt/2), tol=1e-1, maxiter=10)[0]
 
     b   = l1_h.assemble(t=0.)
     out = b.copy()
@@ -243,7 +236,7 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
 
     comm.Barrier()
     t0       = time()
-    e_history, b_history = splitting_integrator(e0, bhalf, M1, M2, R1, R2, S1, S2, R1_b, BC, J_h, dt, niter, Vh, l2norm_h, cg_niter)
+    e_history, b_history = splitting_integrator(e0, bhalf, M1, M2, R1, R2, dt, niter, Vh, l2norm_h, cg_niter)
     t1       = time()
 
     tt = comm.reduce(t1-t0,op=MPI.MAX)

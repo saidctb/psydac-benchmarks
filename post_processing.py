@@ -2,11 +2,13 @@ import numpy as np
 
 
 results_folder = 'results/'
-problems = ['poisson_3d','vector_poisson_3d','time_harmonic_maxwell_3d']
-mappings = [[['identity', True],['identity', False], ['quarter_annulus', True], ['quarter_annulus', False]],[['identity', True]],[['identity', True]]]
-ncells   = [64,96,128,160,192,256]
+#problems = ['poisson_3d','vector_poisson_3d','time_harmonic_maxwell_3d']
+problems = ['maxwell3d']
+#mappings = [[['identity', True],['identity', False], ['quarter_annulus', True], ['quarter_annulus', False]],[['identity', True]],[['identity', True]]]
+mappings = [[['identity', False]]]
+ncells   = [64,96,128,160,192,224]
 degrees  = [2,3,4,5]
-number_of_mpi_procs = [1*32,2*32,4*32,8*32,16*32,32*32,64*32,128*32]
+number_of_mpi_procs = [1*35,2*35,4*35,8*35,16*35,32*35,64*35,128*35]
 number_of_threads = 1
 
 timmings_bi_assembly   = np.zeros((len(problems), max(len(mapping) for mapping in mappings), len(ncells),len(degrees), len(number_of_mpi_procs)))
@@ -44,9 +46,9 @@ for i1,p in enumerate(problems):
         print("="*45,"Timings of the Matrix Assembly of {} with the {}".format(p,mapping), "="*45)
         T = np.around(timmings_bi_assembly[i1,i2], decimals=5)
         newT = []
-        for i2,nc in enumerate(ncells):
-            for i3,d in enumerate(degrees):
-                newT.append(["nc = {} ** 3 , p = {}".format(nc,d)] +  T[i2,i3].tolist())
+        for i3,nc in enumerate(ncells):
+            for i4,d in enumerate(degrees):
+                newT.append(["nc = {} ** 3 , p = {}".format(nc,d)] +  T[i3,i4].tolist())
             newT.append(["   "]*len(T[0]))
         
         print(tabulate(newT, headers=headers, tablefmt="grid"))

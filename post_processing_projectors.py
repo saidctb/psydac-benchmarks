@@ -16,7 +16,7 @@ for i1,p in enumerate(problems):
     for i3,nc in enumerate(ncells):
         for i4,d in enumerate(degrees):
             for i5, mpi_p in enumerate(number_of_mpi_procs):
-                names = (p,) + (nc,)*3 +(d,)*3 + (mpi_p, number_of_threads)
+                names = (p,) + (nc,)*3 +(d,)*3 + (mpi_p,)
                 filename = '_'.join([str(i) for i in names])
                 try:
                     T = np.load(results_folder+filename+'.npy', allow_pickle=True)

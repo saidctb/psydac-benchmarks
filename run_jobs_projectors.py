@@ -39,7 +39,7 @@ script_nc_d = 'srun python3 {filename}.py -n {nc} {nc} {nc} -d {d} {d} {d}\n'
 
 for f in filenames:
     for nn in nnodes:
-        batch_script = batch_str.format(filename=f, nprocs=nn*ntasks_per_node,nnodes=nn,ntasks_per_node=ntasks_per_node, mem=150000,time_limit="2:00:00")
+        batch_script = batch_str.format(filename=f, nprocs=nn*ntasks_per_node,nnodes=nn,ntasks_per_node=ntasks_per_node, mem=150000,time_limit="1:00:00")
         for nc in ncells:
             for d in degrees:
                 batch_script += script_nc_d.format(filename=f, nc=nc, d=d)

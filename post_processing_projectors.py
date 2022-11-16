@@ -35,9 +35,9 @@ from tabulate import tabulate
 headers = [""] + [str(np) for np in number_of_mpi_procs]
 
 for i1,p in enumerate(problems):
-    if all(np.isnan(v) for v in timmings_assembly[i1].flatten()):continue
-    print("="*45,"Timings of the Matrix Assembly of {}".format(p), "="*45)
-    T = np.around(timmings_assembly[i1], decimals=5)
+    if all(np.isnan(v) for v in timmings_solver[i1].flatten()):continue
+    print("="*45,"Timings of the kronecker solver of {}".format(p), "="*45)
+    T = np.around(timmings_solver[i1], decimals=5)
     newT = []
     for i2,nc in enumerate(ncells):
         for i3,d in enumerate(degrees):

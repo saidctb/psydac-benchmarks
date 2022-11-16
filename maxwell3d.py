@@ -92,7 +92,7 @@ def splitting_integrator_sp(e0, bhalf, M1, M2, R1, R2, S1, S2, R1_b, BC, J, dt, 
     return e_history, b_history
 
 #===============================================================================
-def splitting_integrator(e0, bhalf, M1, M2, R1, R2, S1, S2, R1_b, BC, J, dt, niter, Vh, l2norm_h):
+def splitting_integrator(e0, bhalf, M1, M2, R1, R2, S1, S2, R1_b, BC, J, dt, niter, Vh, l2norm_h,cg_niter):
 
     e_history = [e0]
     b_history = [bhalf]
@@ -102,11 +102,11 @@ def splitting_integrator(e0, bhalf, M1, M2, R1, R2, S1, S2, R1_b, BC, J, dt, nit
         e = e_history[ts]
         b = b_history[ts]
 
-        y1    = dt * R1.dot(b)  -dt*R1_b.dot(b) +dt*J(t=t+dt/2) + dt * S1.dot(b)
-        e_new = e + cg(M1, y1, tol=1e-8, maxiter=10**6)[0]
+        y1    = dt * (R1.dot(b)  -R1_b.dot(b) +J(t=t+dt/2) + S1.dot(b))
+        e_new = e + cg(M1, y1, tol=1e-15, maxiter=cg_niter)[0]
 
-        y2    = -dt * R2.dot(e_new) - dt * S2.dot(e_new) +dt*BC(t=t+dt)
-        b_new = b + cg(M2, y2, tol=1e-8, maxiter=10**6)[0]
+        y2    = dt *(-R2.dot(e_new) - S2.dot(e_new))
+        b_new = b + cg(M2, y2, tol=1e-15, maxiter=cg_niter)[0]
 
         e_history.append(e_new)
         b_history.append(b_new)
@@ -115,7 +115,7 @@ def splitting_integrator(e0, bhalf, M1, M2, R1, R2, S1, S2, R1_b, BC, J, dt, nit
 
     return e_history, b_history
 #==============================================================================
-def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, comm, store=None):
+def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, comm, cg_niter,store=None):
 
     backend['folder'] = "maxwell_3d_psydac_{}_{}_{}".format(ncells[0], degree[0], comm.size)
     backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math"
@@ -186,6 +186,7 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
     infos['setup_time'] = tt
     infos['ncells'] = tuple(ncells)
     infos['degree'] = tuple(degree)
+    infos['cg_niter'] = cg_niter
     infos['cart_decompositions'] = tuple(tuple(i.nprocs) for i in domain_h.ddm.domains)
     infos['number_of_threads']  = domain_h.ddm.num_threads
 
@@ -208,8 +209,8 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
     # store bilinear forms assembly timing
     infos['bilinear_form_assembly_time'] = tt
 
-    e0    = cg(M1, l1_h.assemble(t=0.), tol=1e-14)[0]
-    bhalf = cg(M2, l2_h.assemble(t=dt/2), tol=1e-14)[0]
+    e0    = cg(M1, l1_h.assemble(t=0.), tol=1e-1, maxiter=1)[0]
+    bhalf = cg(M2, l2_h.assemble(t=dt/2), tol=1e-1, maxiter=1)[0]
 
     b   = l1_h.assemble(t=0.)
     out = b.copy()
@@ -242,7 +243,7 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
 
     comm.Barrier()
     t0       = time()
-    e_history, b_history = splitting_integrator(e0, bhalf, M1, M2, R1, R2, S1, S2, R1_b, BC, J_h, dt, niter, Vh, l2norm_h)
+    e_history, b_history = splitting_integrator(e0, bhalf, M1, M2, R1, R2, S1, S2, R1_b, BC, J_h, dt, niter, Vh, l2norm_h, cg_niter)
     t1       = time()
 
     tt = comm.reduce(t1-t0,op=MPI.MAX)
@@ -387,16 +388,17 @@ if __name__ == '__main__':
     degree = args['degree']
 
     #time parameters
-    niter = 100
-    T     = 1.
-    dt = T/niter
-
+    niter = 10
+    T     = 0.01
+    dt    = T/niter
+    cg_niter = 10
+ 
     comm  = MPI.COMM_WORLD
     store = args['store']
 
     backend = PSYDAC_BACKEND_GPYCCEL
 
-    run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, comm, store=store)
+    run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, comm, cg_niter,store=store)
 
     if store:
         Pm = PostProcessManager(

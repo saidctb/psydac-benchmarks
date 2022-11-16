@@ -113,11 +113,17 @@ def run_model(ncells, degree, comm=None, store=None):
     u, v = elements_of(V, names='u, v')
 
     nn = NormalVector('nn')
-    a = BilinearForm((u,v), integral(Omega, laplace(v) * laplace(u)))
-    l =   LinearForm(   v , integral(Omega, f * v))
+    kappa = 10**3
+    expr_b = kappa*dot(grad(u),nn)*dot(grad(v),nn)
 
-    bc = [EssentialBC(               u, u_e, Omega.boundary),
-          EssentialBC(dot(grad(u), nn), dot(grad(u_e), nn), Omega.boundary)]
+    a = BilinearForm((u,v), integral(Omega, laplace(v) * laplace(u)) + integral(Omega.boundary, expr_b))
+
+    expr_b = kappa*dot(grad(u_e),nn)*dot(grad(v),nn)
+
+    l =   LinearForm(   v , integral(Omega, f * v) + integral(Omega.boundary, expr_b))
+
+    bc = [EssentialBC(               u, u_e, Omega.boundary)]
+          #EssentialBC(dot(grad(u), nn), dot(grad(u_e), nn), Omega.boundary)]
 
     equation = find(u, forall=v, lhs=a(u,v), rhs=l(v), bc=bc)
 

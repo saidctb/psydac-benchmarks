@@ -114,16 +114,19 @@ def run_model(ncells, degree, comm=None, store=None):
 
     nn = NormalVector('nn')
     kappa = 10**3
-    expr_b = kappa*dot(grad(u),nn)*dot(grad(v),nn)
+    expr_b = - laplace(u)*dot(grad(v), nn)\
+             - dot(grad(u), nn)*laplace(v) \
+            + kappa*dot(grad(u),nn)*dot(grad(v),nn)
 
     a = BilinearForm((u,v), integral(Omega, laplace(v) * laplace(u)) + integral(Omega.boundary, expr_b))
 
-    expr_b = kappa*dot(grad(u_e),nn)*dot(grad(v),nn)
+    expr_b = - dot(grad(u_e), nn)*laplace(v) \
+            + kappa*dot(grad(u_e),nn)*dot(grad(v),nn)
 
     l =   LinearForm(   v , integral(Omega, f * v) + integral(Omega.boundary, expr_b))
 
     bc = [EssentialBC(               u, u_e, Omega.boundary)]
-          #EssentialBC(dot(grad(u), nn), dot(grad(u_e), nn), Omega.boundary)]
+#          EssentialBC(dot(grad(u), nn), dot(grad(u_e), nn), Omega.boundary)]
 
     equation = find(u, forall=v, lhs=a(u,v), rhs=l(v), bc=bc)
 

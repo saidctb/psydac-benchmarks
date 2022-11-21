@@ -113,7 +113,7 @@ def run_model(ncells, degree, comm=None, store=None):
     u, v = elements_of(V, names='u, v')
 
     nn = NormalVector('nn')
-    kappa = 10**3
+    kappa = ncells[0]
     expr_b = - laplace(u)*dot(grad(v), nn)\
              - dot(grad(u), nn)*laplace(v) \
             + kappa*dot(grad(u),nn)*dot(grad(v),nn)

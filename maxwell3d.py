@@ -37,6 +37,12 @@ from psydac.linalg.iterative_solvers import pcg
 from psydac.api.postprocessing       import OutputManager
 from psydac.linalg.utilities         import array_to_psydac
 
+PSYDAC_BACKEND_GPYCCEL = PSYDAC_BACKEND_GPYCCEL.copy()
+
+if int(os.environ.get('OMP_NUM_THREADS', 1))>1:
+    PSYDAC_BACKEND_GPYCCEL['openmp'] = True
+
+
 def remove_folder(path):
     shutil.rmtree(path)
 #===============================================================================
@@ -117,7 +123,7 @@ def splitting_integrator(e0, bhalf, M1, M2, R1, R2, dt, niter, Vh, l2norm_h,cg_n
 #==============================================================================
 def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, comm, cg_niter,store=None):
 
-    backend['folder'] = "maxwell_3d_psydac_{}_{}_{}".format(ncells[0], degree[0], comm.size)
+    backend['folder'] = "maxwell_3d_psydac_{}_{}_{}_{}".format(ncells[0], degree[0], comm.size, int(os.environ.get('OMP_NUM_THREADS', 1)))
     backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math"
 
     #+++++++++++++++++++++++++++++++

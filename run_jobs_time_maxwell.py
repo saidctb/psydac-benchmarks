@@ -30,9 +30,9 @@ export OMPI_MCA_mpi_yield_when_idle=1
 
 """
 
-nnodes          = [1,2,2**2,2**3,2**4,2**5,2**6,2**7]
-ntasks_per_node = 35
-ncells          = [50,75,100,125,150,175,200]
+nnodes          = [7,7*2,7*2**2,7*2**3,7*2**4]
+ntasks_per_node = 32
+ncells          = [96,128,160]
 degrees         = [2,3]
 
 script_nc_d = 'srun python3 {filename}.py -n {nc} {nc} {nc} -d {d} {d} {d}\n'

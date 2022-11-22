@@ -39,7 +39,7 @@ export OMP_PROC_BIND=close
 
 nnodes          = [7,7*2,7*2**2,7*2**3,7*2**4]
 ntasks_per_node = 1
-ncells          = [125,150,175]
+ncells          = [96,128,160]
 degrees         = [2,3]
 nthreads        = 32
 

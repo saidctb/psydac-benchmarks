@@ -37,11 +37,11 @@ export OMP_PROC_BIND=close
 
 """
 
-nnodes          = [1,2,2**2,2**3,2**4,2**5,2**6,2**7]
+nnodes          = [7,7*2,7*2**2,7*2**3,7*2**4]
 ntasks_per_node = 1
-ncells          = [50,75,100,125,150,175,200]
+ncells          = [125,150,175]
 degrees         = [2,3]
-nthreads        = 35
+nthreads        = 32
 
 script_nc_d = 'srun python3 {filename}.py -n {nc} {nc} {nc} -d {d} {d} {d}\n'
 

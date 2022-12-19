@@ -96,6 +96,8 @@ def run_model(ncells, degree, comm=None, store=None):
 
     from psydac.api.discretization import discretize
     from psydac.api.settings       import PSYDAC_BACKEND_GPYCCEL
+    from psydac.feec.global_projectors   import Projector_H1
+    from sympy import lambdify
 
     # Define topological domain
     Omega = Domain.from_file(filename='quarter_annulus_3d.h5')
@@ -104,7 +106,7 @@ def run_model(ncells, degree, comm=None, store=None):
     # solution u_e, then compute right-hand side f
     x, y, z = Omega.coordinates
 
-    u_e   = (x**2+y**2+z**2)**2
+    u_e   = sin(pi*x)*sin(pi*y)*sin(pi*z)
     f     = laplace(laplace(u_e))
     f     = TerminalExpr(f, Omega)
 
@@ -113,7 +115,7 @@ def run_model(ncells, degree, comm=None, store=None):
     u, v = elements_of(V, names='u, v')
 
     nn = NormalVector('nn')
-    kappa = ncells[0]
+    kappa = 10*ncells[0]*degree[0]
     expr_b = - laplace(u)*dot(grad(v), nn)\
              - dot(grad(u), nn)*laplace(v) \
              + kappa*dot(grad(u),nn)*dot(grad(v),nn)
@@ -125,7 +127,7 @@ def run_model(ncells, degree, comm=None, store=None):
 
     l =   LinearForm(   v , integral(Omega, f * v) + integral(Omega.boundary, expr_b))
 
-    bc = [EssentialBC(               u, u_e, Omega.boundary)]
+    bc = [EssentialBC(  u, u_e, Omega.boundary)]
 #          EssentialBC(dot(grad(u), nn), dot(grad(u_e), nn), Omega.boundary)]
 
     equation = find(u, forall=v, lhs=a(u,v), rhs=l(v), bc=bc)
@@ -151,7 +153,7 @@ def run_model(ncells, degree, comm=None, store=None):
     h2norm_h = discretize(h2norm, Omega_h, Vh, backend=PSYDAC_BACKEND_GPYCCEL)
 
     # Solve discrete equation to obtain finite element coefficients
-    equation_h.set_solver(solver='cg' ,tol=1e-14, maxiter=10**10, info=True)
+    equation_h.set_solver(solver='cg' ,tol=1e-14, maxiter=10**10, info=True, verbose=False)
     u_h,info = equation_h.solve()
 
     # Compute error norms from solution field
@@ -160,15 +162,20 @@ def run_model(ncells, degree, comm=None, store=None):
     h2_error = h2norm_h.assemble(u=u_h)
 
     if store:
+        a = BilinearForm((u,v), integral(Omega, v*u))
+        l =   LinearForm(   v , integral(Omega, u_e * v))
+        equation = find(u, forall=v, lhs=a(u,v), rhs=l(v))
+        equation_h = discretize(equation, Omega_h, [Vh, Vh], backend=PSYDAC_BACKEND_GPYCCEL)
+        uex_h = equation_h.solve()
         output_m = OutputManager('biharmonic_spaces.yml', 'biharmonic_fields.h5')
 
         output_m.add_spaces(V=Vh)
         output_m.export_space_info()
 
         output_m.set_static()
-        output_m.export_fields(u=u_h)
+        output_m.export_fields(u=u_h, uex=uex_h)
         output_m.close()
-    return l2_error, h1_error, h2_error, info
+    return locals()
 
 #==============================================================================
 def parse_input_arguments():
@@ -215,39 +222,40 @@ def main(degree, ncells, store=False):
     rank = comm.rank
 
     construct_mapping(ncells, degree, comm)
-    l2_error, h1_error, h2_error, info = run_model(ncells, degree, comm, store=store)
+    namespace = run_model(ncells, degree, comm, store=store)
 
     if rank == 0:
         print()
-        print('L2 error = {}'.format(l2_error))
-        print('H1 error = {}'.format(h1_error))
-        print('H2 error = {}'.format(h2_error))
-        print('CG info  = {}'.format(info))
+        print('L2 error = {}'.format(namespace['l2_error']))
+        print('H1 error = {}'.format(namespace['h1_error']))
+        print('H2 error = {}'.format(namespace['h2_error']))
+        print('CG info  = {}'.format(namespace['info']))
         print(flush=True)
 
     if comm:
         comm.Barrier()
-
+    return namespace
 #==============================================================================
 if __name__ == '__main__':
 
     args = parse_input_arguments()
     args = vars(args)
-    main( **args )
+    namespace = main( **args )
 
+    from sympy import lambdify
     if args.get('store',None):
         Pm = PostProcessManager(
-            domain=domain,
+            geometry_file='quarter_annulus_3d.h5',
             space_file='biharmonic_spaces.yml',
             fields_file='biharmonic_fields.h5',
-            comm=comm,    
+            comm=None,    
         )
 
         Pm.export_to_vtk(
             'visu_biharmonic',
             npts_per_cell=3,
             snapshots='all',
-            fields=('u',)
+            fields=('u','uex')
         )
 
         Pm.close()

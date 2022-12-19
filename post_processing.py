@@ -39,10 +39,10 @@ headers = [""] + [str(np) for np in number_of_mpi_procs]
 
 for i1,p in enumerate(problems):
     for i2,mapping in enumerate(mappings[i1]):
-        if all(np.isnan(v) for v in timmings_dot_p[i1,i2].flatten()):continue
+        if all(np.isnan(v) for v in timmings_bi_assembly[i1,i2].flatten()):continue
         mapping = ('{} analytical mapping' if mapping[1] else '{} Nurbs mapping').format(mapping[0])
-        print("="*45,"Timings of the Matrix vector dot product of {} with the {}".format(p,mapping), "="*45)
-        T = np.around(timmings_dot_p[i1,i2], decimals=5)
+        print("="*45,"Timings of the Matrix Assembly of {} with the {}".format(p,mapping), "="*45)
+        T = np.around(timmings_bi_assembly[i1,i2], decimals=5)
         newT = []
         for i3,nc in enumerate(ncells):
             for i4,d in enumerate(degrees):

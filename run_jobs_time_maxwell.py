@@ -32,8 +32,8 @@ export OMPI_MCA_mpi_yield_when_idle=1
 
 nnodes          = [7,7*2,7*2**2,7*2**3,7*2**4]
 ntasks_per_node = 32
-ncells          = [96,128,160]
-degrees         = [2,3]
+ncells          = [72,80,88,96]
+degrees         = [2,3,4]
 
 script_nc_d = 'srun python3 {filename}.py -n {nc} {nc} {nc} -d {d} {d} {d}\n'
 
@@ -50,4 +50,4 @@ for nn in nnodes:
     with open(filename,'w') as file_:
         file_.write(batch_script)
 
-    os.system('sbatch {}'.format(filename))
+#    os.system('sbatch {}'.format(filename))

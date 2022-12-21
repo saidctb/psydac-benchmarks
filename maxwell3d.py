@@ -30,7 +30,7 @@ from psydac.api.discretization       import discretize
 from psydac.api.tests.build_domain   import build_pretzel
 from psydac.fem.basic                import FemField
 from psydac.linalg.iterative_solvers import *
-from psydac.api.settings             import PSYDAC_BACKEND_GPYCCEL
+from psydac.api.settings             import PSYDAC_BACKEND_GPYCCEL,PSYDAC_DEFAULT_FOLDER
 from psydac.feec.pull_push           import pull_2d_hcurl
 from psydac.fem.vector               import ProductFemSpace
 from psydac.linalg.iterative_solvers import pcg
@@ -44,7 +44,7 @@ if int(os.environ.get('OMP_NUM_THREADS', 1))>1:
 
 
 def remove_folder(path):
-    shutil.rmtree(path)
+    os.system('rm -rf "%s" &' % path)
 #===============================================================================
 def union(name, domains):
     assert len(domains)>1
@@ -124,8 +124,8 @@ def splitting_integrator(e0, bhalf, M1, M2, R1, R2, dt, niter, Vh, l2norm_h,cg_n
 def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, comm, cg_niter,store=None):
 
     backend['folder'] = "maxwell_3d_psydac_{}_{}_{}_{}".format(ncells[0], degree[0], comm.size, int(os.environ.get('OMP_NUM_THREADS', 1)))
-    backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math"
-
+    backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math -ffree-line-length-none"
+    PSYDAC_DEFAULT_FOLDER['name'] = '__psydac__' + backend['folder']
     #+++++++++++++++++++++++++++++++
     # 1. Abstract model
     #+++++++++++++++++++++++++++++++
@@ -174,11 +174,11 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
     l2norm_h   = discretize(l2norm, domain_h, Vh, backend=backend)
 
     comm.Barrier()
-    if comm.rank == 0:
-        try:
-            remove_folder(backend['folder'])
-        except:
-            pass
+    try:
+        remove_folder(backend['folder'])
+        remove_folder(PSYDAC_DEFAULT_FOLDER['name'])
+    except:
+        pass
     comm.Barrier()
 
     setup_time2 = time()
@@ -208,11 +208,27 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
     # store bilinear forms assembly timing
     infos['bilinear_form_assembly_time'] = tt
 
+    comm.Barrier()
+
+    t1 = time()
+    M1 = a1_h.assemble()
+    M2 = M1
+    R1 = a2_h.assemble()
+    R2 = a3_h.assemble()
+    t2 = time()
+
+    tt = comm.reduce(t2-t1,op=MPI.MAX)
+
+    # store bilinear forms assembly timing
+    infos['bilinear_form_assembly_time2'] = tt
+
     e0    = cg(M1, l1_h.assemble(t=0.), tol=1e-1, maxiter=10)[0]
     bhalf = cg(M2, l2_h.assemble(t=dt/2), tol=1e-1, maxiter=10)[0]
 
     b   = l1_h.assemble(t=0.)
     out = b.copy()
+    M1.dot(b)
+    b.ghost_regions_in_sync = False
     st  = 0
     for i in range(20):
         comm.Barrier()

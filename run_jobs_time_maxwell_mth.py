@@ -38,10 +38,10 @@ export OMP_PROC_BIND=close
 """
 
 nnodes          = [7,7*2,7*2**2,7*2**3,7*2**4]
-ntasks_per_node = 1
-ncells          = [96,128,160]
-degrees         = [2,3]
-nthreads        = 32
+ntasks_per_node = 2
+ncells          = [80,88,96,72]
+degrees         = [2,3,4,5]
+nthreads        = 16
 
 script_nc_d = 'srun python3 {filename}.py -n {nc} {nc} {nc} -d {d} {d} {d}\n'
 
@@ -54,7 +54,7 @@ for nn in nnodes:
 
         batch_script += '\n'
 
-    filename = 'job_{filename}_{nprocs}.sh'.format(filename=f, nprocs=nn*ntasks_per_node)
+    filename = 'job_{filename}_{nprocs}_mth.sh'.format(filename=f, nprocs=nn*ntasks_per_node)
     with open(filename,'w') as file_:
         file_.write(batch_script)
 

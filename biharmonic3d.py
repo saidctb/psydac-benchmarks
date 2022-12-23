@@ -115,10 +115,15 @@ def run_model(ncells, degree, comm=None, store=None):
     u, v = elements_of(V, names='u, v')
 
     nn = NormalVector('nn')
+<<<<<<< Updated upstream
     kappa = 10*ncells[0]*degree[0]
     expr_b = - laplace(u)*dot(grad(v), nn)\
              - dot(grad(u), nn)*laplace(v) \
              + kappa*dot(grad(u),nn)*dot(grad(v),nn)
+=======
+    kappa = 10**8
+    expr_b = kappa*dot(grad(u),nn)*dot(grad(v),nn)
+>>>>>>> Stashed changes
 
     a = BilinearForm((u,v), integral(Omega, laplace(v) * laplace(u)) + integral(Omega.boundary, expr_b))
 
@@ -127,7 +132,11 @@ def run_model(ncells, degree, comm=None, store=None):
 
     l =   LinearForm(   v , integral(Omega, f * v) + integral(Omega.boundary, expr_b))
 
+<<<<<<< Updated upstream
     bc = [EssentialBC(  u, u_e, Omega.boundary)]
+=======
+    bc = [EssentialBC(               u, u_e, Omega.boundary)]
+>>>>>>> Stashed changes
 #          EssentialBC(dot(grad(u), nn), dot(grad(u_e), nn), Omega.boundary)]
 
     equation = find(u, forall=v, lhs=a(u,v), rhs=l(v), bc=bc)

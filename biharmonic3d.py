@@ -51,7 +51,7 @@ def construct_mapping(ncells, degree, comm=None):
 
         default_params = dict( rmin=0.0, rmax=1.0, c1=0.0, c2=0.0)
         r_in    = 1.0
-        r_out   = 4.0
+        r_out   = 2.0
         lims1   = (r_in, r_out)
         lims2   = (np.pi/4, 3*np.pi/4)
         lims3   = (0, np.pi/2)
@@ -153,7 +153,7 @@ def run_model(ncells, degree, comm=None, store=None):
     h2norm_h = discretize(h2norm, Omega_h, Vh, backend=PSYDAC_BACKEND_GPYCCEL)
 
     # Solve discrete equation to obtain finite element coefficients
-    equation_h.set_solver(solver='cg' ,tol=1e-14, maxiter=10**10, info=True, verbose=False)
+    equation_h.set_solver(solver='cg' ,tol=1e-18, maxiter=10**12, info=True, verbose=False)
     u_h,info = equation_h.solve()
 
     # Compute error norms from solution field

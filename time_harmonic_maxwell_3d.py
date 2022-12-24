@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+
 from time import time
 setup_time1 = time()
 import os
@@ -34,7 +35,7 @@ def remove_folder(path):
 
 def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
 
-    backend['folder'] = "time_harmonic_maxwell_3d_psydac_{}_{}_{}_{}_{}".format(ncells[0], degree[0], comm.size, int(os.environ.get('OMP_NUM_THREADS', 1)), filename is None)
+    backend['folder'] = "time_harmonic_maxwell_3d_psydac_{}_{}_{}_{}".format(ncells[0], degree[0], comm.size, int(os.environ.get('OMP_NUM_THREADS', 1)))
     backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math -ffree-line-length-none"
     PSYDAC_DEFAULT_FOLDER['name'] = '__psydac__' + backend['folder']
 
@@ -114,7 +115,7 @@ def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
     T = comm.reduce(t2-t1,op=MPI.MAX)
 
     infos['bilinear_form_assembly_time2'] = T
-
+    b = rhs.assemble()
     out = b.copy()
     st  = 0
     for i in range(20):
@@ -153,10 +154,10 @@ def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
 #    infos['solve_time'] = comm.reduce(t2-t1,op=MPI.MAX)
 
 
-    # Compute error norms
-    l2_error = l2_norm_h.assemble(u=uh)
+#    # Compute error norms
+#    l2_error = l2_norm_h.assemble(u=uh)
 
-    infos['l2_error'] = l2_error
+#    infos['l2_error'] = l2_error
     if comm.rank == 0:
         name = (infos['title'],) + infos['ncells'] + infos['degree'] + (comm.size, infos['number_of_threads'])
         name = '_'.join([str(i) for i in name])

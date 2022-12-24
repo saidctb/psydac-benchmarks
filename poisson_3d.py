@@ -121,12 +121,12 @@ def run_poisson_3d(mapping, domain, solution, f, filename=None, ncells=None, deg
     infos['bilinear_form_assembly_time'] = T
     comm.Barrier()
     t1 = time()
-    b  = rhs.assemble()
+    b  = lhs.assemble()
     t2 = time()
     T = comm.reduce(t2-t1,op=MPI.MAX)
 
     infos['blinear_form_assembly_time2'] = T
-
+    b   = rhs.assemble()
     out = b.copy()
     st  = 0
     for i in range(20):

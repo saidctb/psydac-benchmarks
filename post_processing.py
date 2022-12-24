@@ -2,11 +2,11 @@ import numpy as np
 
 
 results_folder = 'results/'
-problems = ['poisson_3d','vector_poisson_3d','time_harmonic_maxwell_3d']
-mappings = [[['identity', True],['identity', False], ['quarter_annulus', True], ['quarter_annulus', False]],[['identity', True]],[['identity', True]]]
-ncells   = [64,96,128,160,192,256]
+problems = ['poisson_3d','time_harmonic_maxwell_3d']
+mappings = [[['identity', True],['identity', False]],[['identity', True]]]
+ncells   = [96,128,160,192]
 degrees  = [2,3,4,5]
-number_of_mpi_procs = [1*32,2*32,4*32,8*32,16*32,32*32,64*32,128*32]
+number_of_mpi_procs = [1*32,2*32,4*32,8*32,16*32,32*32,64*32]
 number_of_threads = 1
 
 timmings_bi_assembly   = np.zeros((len(problems), max(len(mapping) for mapping in mappings), len(ncells),len(degrees), len(number_of_mpi_procs)))
@@ -30,9 +30,11 @@ for i1,p in enumerate(problems):
                         timmings_bi_assembly[i1,i2,i3,i4,i5] = np.nan
                         timmings_dot_p[i1,i2,i3,i4,i5] = np.nan
 
+
                 k = [j for j in range(len(number_of_mpi_procs)) if not np.isnan(timmings_bi_assembly[i1,i2,i3,i4,j])] + [0]
-                scaling_bi_assembly[i1,i2,i3,i4,:] = timmings_bi_assembly[i1,i2,i3,i4,:]/timmings_bi_assembly[i1,i2,i3,i4,k[0]]
-                scaling_dot_p[i1,i2,i3,i4,:]       = timmings_dot_p[i1,i2,i3,i4,:]/timmings_dot_p[i1,i2,i3,i4,k[0]]
+                nn = [np.nan]*k[0] + [2**(i-k[0]) for i in range(k[0],len(number_of_mpi_procs))]
+                scaling_bi_assembly[i1,i2,i3,i4,:] = timmings_bi_assembly[i1,i2,i3,i4,k[0]]/timmings_bi_assembly[i1,i2,i3,i4,:]/nn
+                scaling_dot_p[i1,i2,i3,i4,:]       = timmings_dot_p[i1,i2,i3,i4,k[0]]/timmings_dot_p[i1,i2,i3,i4,:]/nn
 
 from tabulate import tabulate
 headers = [""] + [str(np) for np in number_of_mpi_procs]
@@ -42,7 +44,7 @@ for i1,p in enumerate(problems):
         if all(np.isnan(v) for v in timmings_bi_assembly[i1,i2].flatten()):continue
         mapping = ('{} analytical mapping' if mapping[1] else '{} Nurbs mapping').format(mapping[0])
         print("="*45,"Timings of the Matrix Assembly of {} with the {}".format(p,mapping), "="*45)
-        T = np.around(timmings_bi_assembly[i1,i2], decimals=5)
+        T = np.around(scaling_bi_assembly[i1,i2], decimals=5)
         newT = []
         for i2,nc in enumerate(ncells):
             for i3,d in enumerate(degrees):

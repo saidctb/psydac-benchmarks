@@ -163,7 +163,7 @@ def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
         name = '_'.join([str(i) for i in name])
         np.save('results/' + name, infos)
 
-def test_maxwell_time_harmonic_3d(ncells, degree):
+def test_maxwell_time_harmonic_3d(ncells, degree,**kwargs):
 
     alpha    = 1.
     uex      = uex = Tuple(sin(pi*y)*sin(pi*z), sin(pi*x)*cos(pi*y)*sin(pi*z), sin(pi*x)*cos(pi*z)*sin(pi*y))
@@ -203,7 +203,17 @@ def parse_input_arguments():
         help    = 'Number of grid cells (elements) along each dimension'
     )
 
+    parser.add_argument('-a', action='store_true', \
+                       help='Use analytical mapping.', \
+                       dest='analytical')
 
+    parser.add_argument( '-m',
+        type    = str,
+        nargs   = 1,
+        default = ['identity'],
+        dest    = 'mapping',
+        help    = 'mapping'
+    )
     return parser.parse_args()
 
 #==============================================================================

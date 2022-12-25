@@ -90,6 +90,7 @@ def run_poisson_3d(mapping, domain, solution, f, filename=None, ncells=None, deg
     comm.Barrier()
     try:
         remove_folder(backend['folder'])
+        remove_folder(PSYDAC_DEFAULT_FOLDER['name'])
     except:
         pass
     comm.Barrier()
@@ -240,7 +241,7 @@ def parse_input_arguments():
         help    = 'Number of grid cells (elements) along each dimension'
     )
 
-    parser.add_argument('--a', action='store_true', \
+    parser.add_argument('-a', action='store_true', \
                        help='Use analytical mapping.', \
                        dest='analytical')
 

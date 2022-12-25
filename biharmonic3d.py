@@ -138,7 +138,7 @@ def run_model(filename, ncells, degree, comm, backend):
 
     l =   LinearForm(   v , integral(Omega, f * v) + integral(Omega.boundary, expr_b))
 
-    bc = [EssentialBC(  u, u_e, Omega.boundary)]
+    bc = [EssentialBC(  u, 0, Omega.boundary)]
 #         EssentialBC(dot(grad(u), nn), dot(grad(u_e), nn), Omega.boundary)]
 
     equation = find(u, forall=v, lhs=a(u,v), rhs=l(v), bc=bc)
@@ -312,7 +312,7 @@ def main(degree, ncells, **kwargs):
     rank = comm.rank
 
 #    construct_mapping(ncells, degree, comm)
-    filename = 'quarter_annulus_3d_{}_{}.h5'.format(ncells[0], degree[0])
+    filename = 'mesh/quarter_annulus_3d_{}_{}.h5'.format(ncells[0], degree[0])
     namespace = run_model(filename, ncells, degree, comm, backend=PSYDAC_BACKEND_GPYCCEL)
 
     return namespace

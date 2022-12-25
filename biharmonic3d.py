@@ -63,7 +63,7 @@ def construct_mapping(ncells, degree, comm):
     p1 , p2 , p3  = degree
     nc1, nc2, nc3 = ncells
 
-    filename = 'quarter_annulus_3d_{}_{}.h5'.format(ncells[0], degree[0])
+    filename = 'mesh/quarter_annulus_3d_{}_{}.h5'.format(ncells[0], degree[0])
     rank = 0 if comm is None else comm.rank
 
     if rank == 0:

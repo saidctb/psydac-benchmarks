@@ -42,7 +42,7 @@ for i1,p in enumerate(problems):
 number_of_mpi_procs = [2*i for i in number_of_nodes]
 number_of_threads = 16
 
-timmings_bi_assembly_mth_mth  = np.zeros((len(problems), max(len(mapping) for mapping in mappings), len(ncells),len(degrees), len(number_of_mpi_procs)))
+timmings_bi_assembly_mth  = np.zeros((len(problems), max(len(mapping) for mapping in mappings), len(ncells),len(degrees), len(number_of_mpi_procs)))
 timmings_dot_p_mth         = np.zeros((len(problems), max(len(mapping) for mapping in mappings), len(ncells),len(degrees), len(number_of_mpi_procs)))
 scaling_bi_assembly_mth    = timmings_bi_assembly_mth.copy()
 scaling_dot_p_mth          = timmings_dot_p_mth.copy()

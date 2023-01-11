@@ -117,6 +117,6 @@ for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
     ax.set_xticklabels([str(d) for d in nthreads])
     ax.grid(True)
 #    ax.title.set_text(title)
-    fig.tight_layout(rect=[0, 0.05, 1, 1])
+    fig.tight_layout()
 
     fig.savefig(fname)

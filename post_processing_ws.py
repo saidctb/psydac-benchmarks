@@ -111,6 +111,7 @@ for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
     ax.set_xlabel( xlabel, rotation='horizontal' )
     ax.set_ylabel( r'time [s]' )
     ax.set_xscale('log')
+    ax.set_yscale('log')
     ax.set_xticks([])
     ax.set_xticks(nthreads)
     ax.set_xticklabels([str(d) for d in nthreads])

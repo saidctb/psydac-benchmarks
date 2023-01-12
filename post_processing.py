@@ -86,9 +86,9 @@ for i1,p in enumerate(problems):
         print("="*45,"Timings of the Matrix Assembly of {} with the {}".format(p,mapping), "="*45)
         T = np.around(timmings_bi_assembly_mth[i1,i2], decimals=5)
         newT = []
-        for i2,nc in enumerate(ncells):
-            for i3,d in enumerate(degrees):
-                newT.append(["nc = {} ** 3 , p = {}".format(nc,d)] +  T[i2,i3].tolist())
+        for i3,nc in enumerate(ncells):
+            for i4,d in enumerate(degrees):
+                newT.append(["nc = {} ** 3 , p = {}".format(nc,d)] +  T[i3,i4].tolist())
             newT.append(["   "]*len(T[0]))
         
         print(tabulate(newT, headers=headers, tablefmt="grid"))

@@ -47,7 +47,7 @@ os.makedirs('results', exist_ok=True)
 
 for mapping,f in zip(mappings,filenames):
     for ea in mapping:
-        mapp = '-m ' + ea[0]+(' -a' if ea[1] else '')
+        mapp = '-m ' + ea[0]+(' --a' if ea[1] else '')
         mapp_name = ea[0] + (('_'+'analytical') if ea[1] else '')
 
         for nn in nnodes:

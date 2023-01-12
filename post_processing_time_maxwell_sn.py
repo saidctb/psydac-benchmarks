@@ -4,8 +4,8 @@ results_folder = 'results/'
 filename       = 'maxwell3d'
 
 number_of_mpi_procs = 7
-ncells          = [40,52,64]
-degrees         = [2,3,4,5]
+ncells          = [52,64]
+degrees         = [3,4,5]
 number_of_threads = np.array([1,2,4,8,16])
 timmings_bi_assembly     = np.zeros((len(ncells),len(degrees), len(number_of_threads)))
 timmings_time_integrator = np.zeros((len(ncells),len(degrees), len(number_of_threads)))
@@ -62,27 +62,30 @@ from itertools import product
 colors = np.linspace(0, 1, len(degrees))
 #np.random.shuffle(colors)
 colors = cm.rainbow(colors)
-titles = ['Matrix Assembly']
-names  = ['assembly']
+
+titles = ['Matrix Assembly', 'Matrix Vector Product']
+fnames = ['matrix_assembly_single_node', 'matrix_vector_product_single_node']
+xaxist = [r'number of threads', r'number of threads']
+timings = [timmings_bi_assembly, timmings_dot_p]
+
 line_styles = ['>-','o-','s-','v-']
-timings = timmings_bi_assembly
-for title,name in zip(titles, names):
+for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
     fig = plt.figure(figsize=(10,17))
 #    fig.suptitle(title)
     ax = fig.add_subplot(1, 1, 1)
-    ax.plot(number_of_threads,[5*np.nanmax(timings)/2**d for d in range(len(number_of_threads))], color='black', linestyle='dashed', label='perfect scaling')
+    ax.plot(number_of_threads,[5*np.nanmax(timings_i)/2**d for d in range(len(number_of_threads))], color='black', linestyle='dashed', label='perfect scaling')
     for nc in range(len(ncells)):
         for p in range(degrees[0],degrees[-1]+1):
-            mask = np.isfinite(timings[nc,p-degrees[0]])
-            line, = ax.plot(number_of_threads[mask], timings[nc,p-degrees[0]][mask], line_styles[nc],color=colors[p-2])
+            mask = np.isfinite(timings_i[nc,p-degrees[0]])
+            line, = ax.plot(number_of_threads[mask], timings_i[nc,p-degrees[0]][mask], line_styles[nc],color=colors[p-degrees[0]])
 
         row = '$n_{{el}}={}^3$'.format(ncells[nc])
-        line, = ax.plot(np.nan*number_of_threads[mask], np.nan*timings[nc,degrees[0]][mask], line_styles[nc],color='k', label=row)
+        line, = ax.plot(np.nan*number_of_threads[mask], np.nan*timings_i[nc,p-degrees[0]][mask], line_styles[nc],color='k', label=row)
             #ax.plot(number_of_threads,timings[nc,p-degrees[0]],'s', color=colors[p-degrees[0]])
 
     for p in range(degrees[0],degrees[-1]+1):
         row = '$p={}$'.format(p)
-        line, = ax.plot(np.nan*number_of_threads[mask], np.nan*timings[0,degrees[0]][mask],color=colors[p-2], label=row)
+        line, = ax.plot(np.nan*number_of_threads[mask], np.nan*timings_i[0,p-degrees[0]][mask],color=colors[p-degrees[0]], label=row)
 
         # Shrink current axis by 20%
         box = ax.get_position()
@@ -90,7 +93,7 @@ for title,name in zip(titles, names):
 
         # Put a legend to the right of the current axis
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        ax.set_xlabel( r'number of threads', rotation='horizontal' )
+        ax.set_xlabel( xaxist, rotation='horizontal' )
         ax.set_ylabel( r'time [s]' )
         ax.set_xscale('log')
         ax.set_yscale('log')
@@ -99,5 +102,5 @@ for title,name in zip(titles, names):
         ax.set_xticklabels([str(d) for d in number_of_threads])
         ax.grid(True)
 #        ax.title.set_text('$ncells={}^3$'.format(ncells[nc]))
-    fig.tight_layout(rect=[0, 0.05, 1, 1])
-plt.savefig('matrix_assembly_single_node')
+    fig.tight_layout()
+    fig.savefig(fname)

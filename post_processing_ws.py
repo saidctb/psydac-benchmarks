@@ -82,7 +82,7 @@ line_styles = ['>-','o-','s-','v-']
 from itertools import product
 
 titles = ['Matrix Assembly', 'Matrix Vector Product','Matrix Assembly', 'Matrix Vector Product']
-fnames = ['matrix_assembly_ws', 'matrix_vector_product_ws','matrix_assembly_mth_ws', 'matrix_vector_product_mth_ws']
+fnames = ['matrix_assembly_bih_ws', 'matrix_vector_product_bih_ws','matrix_assembly_mth_bih_ws', 'matrix_vector_product_mth_bih_ws']
 xaxist = [r'number of mpi procs', r'number of mpi procs',r'number of threads',r'number of threads']
 timings = [timmings_bi_assembly, timmings_dot_p, timmings_bi_assembly_mth, timmings_dot_p_mth]
 nthreads = np.array([nn*nt*nth for nn,nt,nth in zip(nnodes, ntasks_per_node, nthreads)])

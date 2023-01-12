@@ -84,7 +84,7 @@ for i1,p in enumerate(problems):
         if all(np.isnan(v) for v in timmings_bi_assembly[i1,i2].flatten()):continue
         mapping = ('{} analytical mapping' if mapping[1] else '{} Nurbs mapping').format(mapping[0])
         print("="*45,"Timings of the Matrix Assembly of {} with the {}".format(p,mapping), "="*45)
-        T = np.around(timmings_bi_assembly_mth[i1,i2], decimals=5)
+        T = np.around(timmings_dot_p_mth[i1,i2], decimals=5)
         newT = []
         for i3,nc in enumerate(ncells):
             for i4,d in enumerate(degrees):
@@ -108,9 +108,15 @@ line_styles = ['>-','o-','s-','v-']
 from itertools import product
 
 titles = ['Matrix Assembly', 'Matrix Vector Product','Matrix Assembly', 'Matrix Vector Product']
-fnames = ['matrix_assembly', 'matrix_vector_product','matrix_assembly_mth', 'matrix_vector_product_mth']
+fnames = ['matrix_assembly_bih_ss', 'matrix_vector_product_bih_ss','matrix_assembly_mth_bih_ss', 'matrix_vector_product_mth_bih_ss']
 xaxist = [r'number of nodes', r'number of nodes',r'number of nodes',r'number of nodes']
 timings = [timmings_bi_assembly[0,0], timmings_dot_p[0,0],timmings_bi_assembly_mth[0,0], timmings_dot_p_mth[0,0]]
+
+
+#titles = ['Matrix Vector Product']
+#fnames = ['matrix_vector_product_mth_bih_ss']
+#xaxist = [r'number of nodes']
+#timings = [timmings_dot_p_mth[0,0]]
 number_of_nodes = np.array([1,2,4,8,16,32,64])
 
 for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):

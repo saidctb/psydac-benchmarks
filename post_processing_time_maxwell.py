@@ -101,7 +101,7 @@ line_styles = ['>-','o-','s-','v-']
 from itertools import product
 
 titles = ['Matrix Assembly', 'Matrix Vector Product','Matrix Assembly', 'Matrix Vector Product']
-fnames = ['matrix_assembly_tm', 'matrix_vector_product_tm','matrix_assembly_mth_tm', 'matrix_vector_product_mth_tm']
+fnames = ['matrix_assembly_tm_ss', 'matrix_vector_product_tm_ss','matrix_assembly_mth_tm_ss', 'matrix_vector_product_mth_tm_ss']
 xaxist = [r'number of nodes', r'number of nodes',r'number of nodes',r'number of nodes']
 timings = [timmings_bi_assembly, timmings_dot_p,timmings_bi_assembly_mth, timmings_dot_p_mth]
 number_of_nodes = np.array([7*1,7*2,7*4,7*8,7*16])

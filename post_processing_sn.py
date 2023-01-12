@@ -109,7 +109,7 @@ line_styles = ['>-','o-','s-','v-']
 from itertools import product
 
 titles = ['Matrix Assembly', 'Matrix Vector Product','Matrix Assembly', 'Matrix Vector Product']
-fnames  = ['matrix_assembly_bih_sn', 'matrix_vector_product_bih_sn','matrix_assembly_mth_bih_sn', 'matrix_vector_product_mth_bih_sn']
+fnames  = ['matrix_assembly_biharmonic_strong_scaling_single_node', 'matrix_vector_product_biharmonic_strong_scaling_single_node','matrix_assembly_biharmonic_strong_scaling_single_node_multi_threading', 'matrix_vector_product_biharmonic_strong_scaling_single_node_multi_threading']
 xaxist = [r'number of mpi procs', r'number of mpi procs',r'number of threads', r'number of threads']
 timings = [timmings_bi_assembly[0,0], timmings_dot_p[0,0],timmings_bi_assembly_mth[0,0], timmings_dot_p_mth[0,0]]
 number_of_mpi_procs = np.array([1,2,4,8,16,32])
@@ -148,4 +148,4 @@ for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
 #    ax.title.set_text(title)
     fig.tight_layout(rect=[0, 0.05, 1, 1])
 
-    fig.savefig(fname)
+    fig.savefig("images/"+fname)

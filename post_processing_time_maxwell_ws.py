@@ -88,10 +88,11 @@ line_styles = ['>-','o-','s-','v-']
 
 from itertools import product
 
-titles = ['Matrix Assembly', 'Matrix Vector Product','Matrix Assembly', 'Matrix Vector Product']
-fnames = ['matrix_assembly_tm_ws', 'matrix_vector_product_tm_ws','matrix_assembly_mth_tm_ws', 'matrix_vector_product_mth_tm_ws']
-xaxist = [r'number of mpi procs', r'number of mpi procs',r'number of threads',r'number of threads']
-timings = [timmings_bi_assembly, timmings_dot_p, timmings_bi_assembly_mth, timmings_dot_p_mth]
+titles = ['Matrix Assembly', 'Matrix Vector Product', 'Time Integrator','Matrix Assembly', 'Matrix Vector Product', 'Time Integrator']
+fnames = ['matrix_assembly_time_maxwell_weak_scaling', 'matrix_vector_product_time_maxwell_weak_scaling', 'time_integrator_time_maxwell_weak_scaling',
+'matrix_assembly_time_maxwell_weak_scaling_multi_threading', 'matrix_vector_product_time_maxwell_weak_scaling_multi_threading','time_integrator_time_maxwell_weak_scaling_multi_threading']
+xaxist = [r'number of mpi procs', r'number of mpi procs', r'number of mpi procs', r'number of threads',r'number of threads', r'number of threads']
+timings = [timmings_bi_assembly, timmings_dot_p, timmings_time_integrator, timmings_bi_assembly_mth, timmings_dot_p_mth, timmings_time_integrator_mth]
 
 nnodes   = [1,1,1,2,4,7,7*2,7*2**2,7*2**3,7*2**4]
 nthreads = np.array([nn*nt*nth for nn,nt,nth in zip(nnodes, ntasks_per_node, nthreads)])
@@ -129,4 +130,4 @@ for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
 #    ax.title.set_text(title)
     fig.tight_layout()
 
-    fig.savefig(fname)
+    fig.savefig("images/"+fname)

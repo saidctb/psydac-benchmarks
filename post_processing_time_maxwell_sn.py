@@ -64,7 +64,7 @@ colors = np.linspace(0, 1, len(degrees))
 colors = cm.rainbow(colors)
 
 titles = ['Matrix Assembly', 'Matrix Vector Product']
-fnames = ['matrix_assembly_single_node', 'matrix_vector_product_single_node']
+fnames = ['matrix_assembly_time_maxwell_single_node_multi_threading', 'matrix_vector_product_time_maxwell_single_node_multi_threading']
 xaxist = [r'number of threads', r'number of threads']
 timings = [timmings_bi_assembly, timmings_dot_p]
 
@@ -103,4 +103,4 @@ for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
         ax.grid(True)
 #        ax.title.set_text('$ncells={}^3$'.format(ncells[nc]))
     fig.tight_layout()
-    fig.savefig(fname)
+    fig.savefig("images/"+fname)

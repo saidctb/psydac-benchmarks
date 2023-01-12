@@ -20,19 +20,25 @@ from sympde.expr     import find, EssentialBC
 from sympde.topology.analytical_mapping import SphericalMapping
 
 from psydac.api.discretization import discretize
-from psydac.api.settings       import PSYDAC_BACKEND_GPYCCEL
+from psydac.api.settings       import PSYDAC_BACKEND_GPYCCEL,PSYDAC_DEFAULT_FOLDER
+
+PSYDAC_BACKEND_GPYCCEL = PSYDAC_BACKEND_GPYCCEL.copy()
+
+if int(os.environ.get('OMP_NUM_THREADS', 1))>1:
+    PSYDAC_BACKEND_GPYCCEL['openmp'] = True
 
 x,y,z = symbols('x1, x2, x3')
 comm = MPI.COMM_WORLD
 
 def remove_folder(path):
-    shutil.rmtree(path)
+    os.system('rm -rf "%s" &' % path)
 
 def run_poisson_3d(mapping, domain, solution, f, filename=None, ncells=None, degree=None, backend=None):
 
 
-    backend['folder'] = "poisson_3d_psydac_{}_{}_{}_{}".format(ncells[0], degree[0], comm.size, filename is None)
-    backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math"
+    backend['folder'] = "poisson_3d_psydac_{}_{}_{}_{}_{}".format(ncells[0], degree[0], comm.size, int(os.environ.get('OMP_NUM_THREADS', 1)), filename is None)
+    backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math -ffree-line-length-none"
+    PSYDAC_DEFAULT_FOLDER['name'] = '__psydac__' + backend['folder']
 
     #+++++++++++++++++++++++++++++++
     # 1. Abstract model
@@ -82,11 +88,11 @@ def run_poisson_3d(mapping, domain, solution, f, filename=None, ncells=None, deg
     h1norm_h = discretize(h1norm, domain_h, Vh, backend=backend)
 
     comm.Barrier()
-    if comm.rank == 0:
-        try:
-            remove_folder(backend['folder'])
-        except:
-            pass
+    try:
+        remove_folder(backend['folder'])
+        remove_folder(PSYDAC_DEFAULT_FOLDER['name'])
+    except:
+        pass
     comm.Barrier()
 
     setup_time2 = time()
@@ -116,12 +122,12 @@ def run_poisson_3d(mapping, domain, solution, f, filename=None, ncells=None, deg
     infos['bilinear_form_assembly_time'] = T
     comm.Barrier()
     t1 = time()
-    b  = rhs.assemble()
+    b  = lhs.assemble()
     t2 = time()
     T = comm.reduce(t2-t1,op=MPI.MAX)
 
-    infos['linear_form_assembly_time'] = T
-
+    infos['blinear_form_assembly_time2'] = T
+    b   = rhs.assemble()
     out = b.copy()
     st  = 0
     for i in range(20):
@@ -202,7 +208,6 @@ def test_poisson_3d(mapping, analytical, ncells, degree):
             raise NotImplementedError("mapping is not available")
 
         domain = Domain.from_file(filename)
-
     run_poisson_3d(mapping, domain, solution, f, filename=filename ,ncells=ncells, degree=degree, backend=PSYDAC_BACKEND_GPYCCEL)
 
 
@@ -236,7 +241,7 @@ def parse_input_arguments():
         help    = 'Number of grid cells (elements) along each dimension'
     )
 
-    parser.add_argument('--a', action='store_true', \
+    parser.add_argument('-a', action='store_true', \
                        help='Use analytical mapping.', \
                        dest='analytical')
 

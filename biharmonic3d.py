@@ -1,10 +1,30 @@
 # -*- coding: UTF-8 -*-
 
+import os
 import numpy as np
 
+from time import time
+setup_time1 = time()
 from sympde.topology import Mapping,IdentityMapping
 from psydac.api.postprocessing import PostProcessManager
 from psydac.api.postprocessing import OutputManager
+from sympy import sin, pi
+
+from sympde.calculus import laplace, dot, grad,div
+from sympde.topology import Cube, Mapping, Domain, Union
+from sympde.topology import ScalarFunctionSpace, elements_of
+from sympde.topology import NormalVector
+from sympde.expr     import BilinearForm, LinearForm, Norm, TerminalExpr
+from sympde.expr     import EssentialBC, find
+from sympde.expr     import integral
+
+from psydac.api.discretization import discretize
+from psydac.api.settings       import PSYDAC_BACKEND_GPYCCEL, PSYDAC_DEFAULT_FOLDER
+from sympy import lambdify
+from mpi4py import MPI
+
+def remove_folder(path):
+    os.system('rm -rf "%s" &' % path)
 
 class SphericalMapping(Mapping):
     """
@@ -31,7 +51,7 @@ class PolarMapping(Mapping):
     _ldim        = 3
     _pdim        = 3
 
-def construct_mapping(ncells, degree, comm=None):
+def construct_mapping(ncells, degree, comm):
 
     from sympde.topology                    import Cube
     from psydac.cad.geometry                import Geometry
@@ -43,6 +63,7 @@ def construct_mapping(ncells, degree, comm=None):
     p1 , p2 , p3  = degree
     nc1, nc2, nc3 = ncells
 
+    filename = 'mesh/quarter_annulus_3d_{}_{}.h5'.format(ncells[0], degree[0])
     rank = 0 if comm is None else comm.rank
 
     if rank == 0:
@@ -79,28 +100,17 @@ def construct_mapping(ncells, degree, comm=None):
         geo = Geometry(domain=domain, ncells=ncells, periodic=periodic, mappings=mappings)
 
         # Export to file
-        geo.export('quarter_annulus_3d.h5')
+        geo.export(filename)
 
 #==============================================================================
-def run_model(ncells, degree, comm=None, store=None):
+def run_model(filename, ncells, degree, comm, backend):
 
-    from sympy import sin, pi
-
-    from sympde.calculus import laplace, dot, grad,div
-    from sympde.topology import Cube, Mapping, Domain, Union
-    from sympde.topology import ScalarFunctionSpace, elements_of
-    from sympde.topology import NormalVector
-    from sympde.expr     import BilinearForm, LinearForm, Norm, TerminalExpr
-    from sympde.expr     import EssentialBC, find
-    from sympde.expr     import integral
-
-    from psydac.api.discretization import discretize
-    from psydac.api.settings       import PSYDAC_BACKEND_GPYCCEL
-    from psydac.feec.global_projectors   import Projector_H1
-    from sympy import lambdify
+    backend['folder'] = "poisson_3d_psydac_{}_{}_{}_{}_{}".format(ncells[0], degree[0], comm.size, int(os.environ.get('OMP_NUM_THREADS', 1)), filename is None)
+    backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math -ffree-line-length-none"
+    PSYDAC_DEFAULT_FOLDER['name'] = '__psydac__' + backend['folder']
 
     # Define topological domain
-    Omega = Domain.from_file(filename='quarter_annulus_3d.h5')
+    Omega = Domain.from_file(filename=filename)
 
     # Method of manufactured solutions: define exact
     # solution u_e, then compute right-hand side f
@@ -115,15 +125,11 @@ def run_model(ncells, degree, comm=None, store=None):
     u, v = elements_of(V, names='u, v')
 
     nn = NormalVector('nn')
-<<<<<<< Updated upstream
+
     kappa = 10*ncells[0]*degree[0]
     expr_b = - laplace(u)*dot(grad(v), nn)\
              - dot(grad(u), nn)*laplace(v) \
              + kappa*dot(grad(u),nn)*dot(grad(v),nn)
-=======
-    kappa = 10**8
-    expr_b = kappa*dot(grad(u),nn)*dot(grad(v),nn)
->>>>>>> Stashed changes
 
     a = BilinearForm((u,v), integral(Omega, laplace(v) * laplace(u)) + integral(Omega.boundary, expr_b))
 
@@ -132,12 +138,8 @@ def run_model(ncells, degree, comm=None, store=None):
 
     l =   LinearForm(   v , integral(Omega, f * v) + integral(Omega.boundary, expr_b))
 
-<<<<<<< Updated upstream
-    bc = [EssentialBC(  u, u_e, Omega.boundary)]
-=======
-    bc = [EssentialBC(               u, u_e, Omega.boundary)]
->>>>>>> Stashed changes
-#          EssentialBC(dot(grad(u), nn), dot(grad(u_e), nn), Omega.boundary)]
+    bc = [EssentialBC(  u, 0, Omega.boundary)]
+#         EssentialBC(dot(grad(u), nn), dot(grad(u_e), nn), Omega.boundary)]
 
     equation = find(u, forall=v, lhs=a(u,v), rhs=l(v), bc=bc)
 
@@ -148,7 +150,7 @@ def run_model(ncells, degree, comm=None, store=None):
     h2norm = Norm(error, Omega, kind='h2')
 
     # Create computational domain from topological domain
-    Omega_h = discretize(Omega, filename='quarter_annulus_3d.h5', comm=comm)
+    Omega_h = discretize(Omega, filename=filename, comm=comm)
 
     # Create discrete spline space
     Vh = discretize(V, Omega_h,degree=degree)
@@ -162,28 +164,101 @@ def run_model(ncells, degree, comm=None, store=None):
     h2norm_h = discretize(h2norm, Omega_h, Vh, backend=PSYDAC_BACKEND_GPYCCEL)
 
     # Solve discrete equation to obtain finite element coefficients
-    equation_h.set_solver(solver='cg' ,tol=1e-18, maxiter=10**12, info=True, verbose=False)
+    equation_h.set_solver(solver='cg' ,tol=1e-18, maxiter=100, info=True, verbose=False)
+
+    comm.Barrier()
+    try:
+        remove_folder(backend['folder'])
+        remove_folder(PSYDAC_DEFAULT_FOLDER['name'])
+    except:
+        pass
+    comm.Barrier()
+
+    setup_time2 = time()
+    T = comm.reduce(setup_time2-setup_time1,op=MPI.MAX)
+
+    infos = {}
+    infos['title'] = 'biharmonic_3d'
+    infos['setup_time'] = T
+    infos['ncells'] = tuple(ncells)
+    infos['degree'] = tuple(degree)
+    infos['cart_decomposition'] = tuple(Vh.vector_space.cart.nprocs)
+    infos['number_of_threads']  = Vh.vector_space.cart.num_threads
+
+    #+++++++++++++++++++++++++++++++
+    # 3. Solution
+    #+++++++++++++++++++++++++++++++
+
+    lhs = equation_h.lhs
+    rhs = equation_h.rhs
+    # Solve linear system
+    comm.barrier()
+    t1 = time()
+    A  = lhs.assemble()
+    t2 = time()
+    T = comm.reduce(t2-t1,op=MPI.MAX)
+
+    infos['bilinear_form_assembly_time'] = T
+    comm.Barrier()
+    t1 = time()
+    b  = lhs.assemble()
+    t2 = time()
+    T = comm.reduce(t2-t1,op=MPI.MAX)
+
+    infos['blinear_form_assembly_time2'] = T
+    b   = rhs.assemble()
+    out = b.copy()
+    st  = 0
+    for i in range(20):
+        comm.Barrier()
+        t1 = time()
+        A.dot(b, out=out)
+        t2 = time()
+        b.ghost_regions_in_sync = False
+        st += t2-t1
+
+    T = comm.reduce(st/20,op=MPI.MAX)
+
+    infos['dot_product_time'] = T
+
+    st = 0
+    for i in range(20):
+        comm.Barrier()
+        t1 = time()
+        b.update_ghost_regions()
+        t2 = time()
+        st += t2-t1
+
+    T = comm.reduce(st/20,op=MPI.MAX)
+
+    infos['dot_product_communication_time'] = T
+
+    equation_h.set_solver('cg', tol=1e-18, maxiter=100, info=True)
+    equation_h.assemble()
+    
+    t1 = time()
+    # Solve linear system
+    uh, info = equation_h.solve()
+    t2 = time()
+
+    infos.update(info)
+    infos['solve_time'] = comm.reduce(t2-t1,op=MPI.MAX)
+
+    # Compute error norms
+    l2_error = l2norm_h.assemble(u=uh)
+    h1_error = h1norm_h.assemble(u=uh)
+
+    infos['l2_error'] = l2_error
+    infos['h1_error'] = h1_error
+
+    if comm.rank == 0:
+        name = (infos['title'],) + (('geof',) if filename else ()) + infos['ncells'] + infos['degree'] + (comm.size, infos['number_of_threads'])
+        name = '_'.join([str(i) for i in name])
+        np.save('results/' + name, infos)
+    
     u_h,info = equation_h.solve()
 
-    # Compute error norms from solution field
-    l2_error = l2norm_h.assemble(u=u_h)
-    h1_error = h1norm_h.assemble(u=u_h)
-    h2_error = h2norm_h.assemble(u=u_h)
 
-    if store:
-        a = BilinearForm((u,v), integral(Omega, v*u))
-        l =   LinearForm(   v , integral(Omega, u_e * v))
-        equation = find(u, forall=v, lhs=a(u,v), rhs=l(v))
-        equation_h = discretize(equation, Omega_h, [Vh, Vh], backend=PSYDAC_BACKEND_GPYCCEL)
-        uex_h = equation_h.solve()
-        output_m = OutputManager('biharmonic_spaces.yml', 'biharmonic_fields.h5')
-
-        output_m.add_spaces(V=Vh)
-        output_m.export_space_info()
-
-        output_m.set_static()
-        output_m.export_fields(u=u_h, uex=uex_h)
-        output_m.close()
     return locals()
 
 #==============================================================================
@@ -215,34 +290,31 @@ def parse_input_arguments():
         help    = 'Number of grid cells (elements) along each dimension'
     )
 
-    parser.add_argument( '-s',
-        action  = 'store_true',
-        dest    = 'store',
-        help    = 'Save output files'
+
+    parser.add_argument('-a', action='store_true', \
+                       help='Use analytical mapping.', \
+                       dest='analytical')
+
+    parser.add_argument( '-m',
+        type    = str,
+        nargs   = 1,
+        default = ['identity'],
+        dest    = 'mapping',
+        help    = 'mapping'
     )
 
     return parser.parse_args()
 
 #==============================================================================
-def main(degree, ncells, store=False):
+def main(degree, ncells, **kwargs):
 
-    from mpi4py import MPI
     comm = MPI.COMM_WORLD
     rank = comm.rank
 
-    construct_mapping(ncells, degree, comm)
-    namespace = run_model(ncells, degree, comm, store=store)
+#    construct_mapping(ncells, degree, comm)
+    filename = 'mesh/quarter_annulus_3d_{}_{}.h5'.format(ncells[0], degree[0])
+    namespace = run_model(filename, ncells, degree, comm, backend=PSYDAC_BACKEND_GPYCCEL)
 
-    if rank == 0:
-        print()
-        print('L2 error = {}'.format(namespace['l2_error']))
-        print('H1 error = {}'.format(namespace['h1_error']))
-        print('H2 error = {}'.format(namespace['h2_error']))
-        print('CG info  = {}'.format(namespace['info']))
-        print(flush=True)
-
-    if comm:
-        comm.Barrier()
     return namespace
 #==============================================================================
 if __name__ == '__main__':
@@ -250,22 +322,4 @@ if __name__ == '__main__':
     args = parse_input_arguments()
     args = vars(args)
     namespace = main( **args )
-
-    from sympy import lambdify
-    if args.get('store',None):
-        Pm = PostProcessManager(
-            geometry_file='quarter_annulus_3d.h5',
-            space_file='biharmonic_spaces.yml',
-            fields_file='biharmonic_fields.h5',
-            comm=None,    
-        )
-
-        Pm.export_to_vtk(
-            'visu_biharmonic',
-            npts_per_cell=3,
-            snapshots='all',
-            fields=('u','uex')
-        )
-
-        Pm.close()
 

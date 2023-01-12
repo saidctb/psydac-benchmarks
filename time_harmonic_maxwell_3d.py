@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+
 from time import time
 setup_time1 = time()
 import os
@@ -19,18 +20,24 @@ from sympde.expr     import Norm
 from sympde.expr     import find, EssentialBC
 
 from psydac.api.discretization import discretize
-from psydac.api.settings       import PSYDAC_BACKEND_GPYCCEL
+from psydac.api.settings       import PSYDAC_BACKEND_GPYCCEL,PSYDAC_DEFAULT_FOLDER
+
+PSYDAC_BACKEND_GPYCCEL = PSYDAC_BACKEND_GPYCCEL.copy()
+
+if int(os.environ.get('OMP_NUM_THREADS', 1))>1:
+    PSYDAC_BACKEND_GPYCCEL['openmp'] = True
 
 x,y,z    = symbols('x1, x2, x3')
 comm = MPI.COMM_WORLD
 
 def remove_folder(path):
-    shutil.rmtree(path)
+    os.system('rm -rf "%s" &' % path)
 
 def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
 
-    backend['folder'] = "time_harmonic_3d_psydac_{}_{}_{}".format(ncells[0], degree[0], comm.size)
-    backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math"
+    backend['folder'] = "time_harmonic_maxwell_3d_psydac_{}_{}_{}_{}".format(ncells[0], degree[0], comm.size, int(os.environ.get('OMP_NUM_THREADS', 1)))
+    backend['flags']  = "-O3 -march=native -mtune=native  -mavx -ffast-math -ffree-line-length-none"
+    PSYDAC_DEFAULT_FOLDER['name'] = '__psydac__' + backend['folder']
 
     # ... abstract model
     domain = Cube('A')
@@ -70,11 +77,10 @@ def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
     l2_norm_h = discretize(l2norm, domain_h, Vh, backend=backend)
 
     comm.Barrier()
-    if comm.rank == 0:
-        try:
-            remove_folder(backend['folder'])
-        except:
-            pass
+    try:
+        remove_folder(backend['folder'])
+    except:
+        pass
     comm.Barrier()
 
     setup_time2 = time()
@@ -104,12 +110,12 @@ def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
     infos['bilinear_form_assembly_time'] = T
     comm.Barrier()
     t1 = time()
-    b  = rhs.assemble()
+    A  = lhs.assemble()
     t2 = time()
     T = comm.reduce(t2-t1,op=MPI.MAX)
 
-    infos['linear_form_assembly_time'] = T
-
+    infos['bilinear_form_assembly_time2'] = T
+    b = rhs.assemble()
     out = b.copy()
     st  = 0
     for i in range(20):
@@ -136,28 +142,28 @@ def run_maxwell_time_harmonic_3d(uex, f, alpha, ncells, degree, backend):
 
     infos['dot_product_communication_time'] = T
  
-    equation_h.set_solver('pcg', pc='jacobi', tol=1e-8, maxiter=3000, info=True)
-    equation_h.assemble()
+#    equation_h.set_solver('pcg', pc='jacobi', tol=1e-8, maxiter=3000, info=True)
+#    equation_h.assemble()
 
-    # Solve linear system
-    t1 = time()
-    uh, info = equation_h.solve()
-    t2 = time()
+#    # Solve linear system
+#    t1 = time()
+#    uh, info = equation_h.solve()
+#    t2 = time()
 
-    infos.update(info)
-    infos['solve_time'] = comm.reduce(t2-t1,op=MPI.MAX)
+#    infos.update(info)
+#    infos['solve_time'] = comm.reduce(t2-t1,op=MPI.MAX)
 
 
-    # Compute error norms
-    l2_error = l2_norm_h.assemble(u=uh)
+#    # Compute error norms
+#    l2_error = l2_norm_h.assemble(u=uh)
 
-    infos['l2_error'] = l2_error
+#    infos['l2_error'] = l2_error
     if comm.rank == 0:
         name = (infos['title'],) + infos['ncells'] + infos['degree'] + (comm.size, infos['number_of_threads'])
         name = '_'.join([str(i) for i in name])
         np.save('results/' + name, infos)
 
-def test_maxwell_time_harmonic_3d(ncells, degree):
+def test_maxwell_time_harmonic_3d(ncells, degree,**kwargs):
 
     alpha    = 1.
     uex      = uex = Tuple(sin(pi*y)*sin(pi*z), sin(pi*x)*cos(pi*y)*sin(pi*z), sin(pi*x)*cos(pi*z)*sin(pi*y))
@@ -197,7 +203,17 @@ def parse_input_arguments():
         help    = 'Number of grid cells (elements) along each dimension'
     )
 
+    parser.add_argument('-a', action='store_true', \
+                       help='Use analytical mapping.', \
+                       dest='analytical')
 
+    parser.add_argument( '-m',
+        type    = str,
+        nargs   = 1,
+        default = ['identity'],
+        dest    = 'mapping',
+        help    = 'mapping'
+    )
     return parser.parse_args()
 
 #==============================================================================

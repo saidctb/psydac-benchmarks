@@ -21,6 +21,7 @@ batch_str =\
 module load gcc/9
 module load openmpi/4
 module load anaconda/3/2020.02 mpi4py/3.0.3
+module load h5py-mpi/2.10
 
 # Run the program:
 
@@ -29,11 +30,12 @@ export OMPI_MCA_mpi_yield_when_idle=1
 
 """
 
-filenames       = ['maxwell3d']
+filenames = ['poisson_3d','time_harmonic_maxwell_3d']
+mappings = [[['identity', True],['identity', False]],[['identity', True]]]
 mappings        = [[['identity', True]]]
 nnodes          = [1,2,2**2,2**3,2**4,2**5,2**6,2**7]
-ntasks_per_node = 35
-ncells          = [64,96,128,160,192,224]
+ntasks_per_node = 2**5
+ncells          = [96,128,160,192]
 degrees         = [2,3,4,5]
 
 script_nc_d = 'srun python3 {filename}.py -n {nc} {nc} {nc} -d {d} {d} {d} {mapping}\n'

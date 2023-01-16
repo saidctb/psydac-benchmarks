@@ -238,44 +238,68 @@ module hcurl_mass_matrix
     allocate(local_test_basis_TE_0_1(0:4, 0:1, 0:3, 0:global_thread_size_1-1))
     allocate(local_test_basis_TE_1_1(0:4, 0:1, 0:4, 0:global_thread_size_1-1))
     allocate(local_test_basis_TE_2_1(0:4, 0:1, 0:4, 0:global_thread_size_1-1))
-    local_test_basis_TE_0_1(:,:,:,:) = global_test_basis_TE_0_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_test_basis_TE_0_1, 4, C_INT64_T) - 1)
-    local_test_basis_TE_1_1(:,:,:,:) = global_test_basis_TE_1_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_test_basis_TE_1_1, 4, C_INT64_T) - 1)
-    local_test_basis_TE_2_1(:,:,:,:) = global_test_basis_TE_2_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_test_basis_TE_2_1, 4, C_INT64_T) - 1)
+    local_test_basis_TE_0_1(:,:,:,:) = 0.0
+    local_test_basis_TE_1_1(:,:,:,:) = 0.0
+    local_test_basis_TE_2_1(:,:,:,:) = 0.0
+
+!    local_test_basis_TE_0_1(:,:,:,:) = global_test_basis_TE_0_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_test_basis_TE_0_1, 4, C_INT64_T) - 1)
+!    local_test_basis_TE_1_1(:,:,:,:) = global_test_basis_TE_1_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_test_basis_TE_1_1, 4, C_INT64_T) - 1)
+!    local_test_basis_TE_2_1(:,:,:,:) = global_test_basis_TE_2_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_test_basis_TE_2_1, 4, C_INT64_T) - 1)
 
     allocate(local_test_basis_TE_0_2(0:4, 0:1, 0:4, 0:global_thread_size_2 - 1))
     allocate(local_test_basis_TE_1_2(0:4, 0:1, 0:3, 0:global_thread_size_2 - 1))
     allocate(local_test_basis_TE_2_2(0:4, 0:1, 0:4, 0:global_thread_size_2 - 1))
-    local_test_basis_TE_0_2(:,:,:,:) = global_test_basis_TE_0_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_test_basis_TE_0_2, 4,C_INT64_T) - 1)
-    local_test_basis_TE_1_2(:,:,:,:) = global_test_basis_TE_1_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_test_basis_TE_1_2, 4,C_INT64_T) - 1)
-    local_test_basis_TE_2_2(:,:,:,:) = global_test_basis_TE_2_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_test_basis_TE_2_2, 4,C_INT64_T) - 1)
+    local_test_basis_TE_0_2(:,:,:,:) = 0.0
+    local_test_basis_TE_1_2(:,:,:,:) = 0.0
+    local_test_basis_TE_2_2(:,:,:,:) = 0.0
+
+!    local_test_basis_TE_0_2(:,:,:,:) = global_test_basis_TE_0_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_test_basis_TE_0_2, 4,C_INT64_T) - 1)
+!    local_test_basis_TE_1_2(:,:,:,:) = global_test_basis_TE_1_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_test_basis_TE_1_2, 4,C_INT64_T) - 1)
+!    local_test_basis_TE_2_2(:,:,:,:) = global_test_basis_TE_2_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_test_basis_TE_2_2, 4,C_INT64_T) - 1)
 
     allocate(local_test_basis_TE_0_3(0:4, 0:1, 0:4, 0:global_thread_size_3 - 1))
     allocate(local_test_basis_TE_1_3(0:4, 0:1, 0:4, 0:global_thread_size_3 - 1))
     allocate(local_test_basis_TE_2_3(0:4, 0:1, 0:3, 0:global_thread_size_3 - 1))
-    local_test_basis_TE_0_3(:,:,:,:) = global_test_basis_TE_0_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_test_basis_TE_0_3, 4,C_INT64_T) - 1)
-    local_test_basis_TE_1_3(:,:,:,:) = global_test_basis_TE_1_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_test_basis_TE_1_3, 4,C_INT64_T) - 1)
-    local_test_basis_TE_2_3(:,:,:,:) = global_test_basis_TE_2_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_test_basis_TE_2_3, 4,C_INT64_T) - 1)
+    local_test_basis_TE_0_3(:,:,:,:) = 0.0
+    local_test_basis_TE_1_3(:,:,:,:) = 0.0
+    local_test_basis_TE_2_3(:,:,:,:) = 0.0
+
+!    local_test_basis_TE_0_3(:,:,:,:) = global_test_basis_TE_0_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_test_basis_TE_0_3, 4,C_INT64_T) - 1)
+!    local_test_basis_TE_1_3(:,:,:,:) = global_test_basis_TE_1_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_test_basis_TE_1_3, 4,C_INT64_T) - 1)
+!    local_test_basis_TE_2_3(:,:,:,:) = global_test_basis_TE_2_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_test_basis_TE_2_3, 4,C_INT64_T) - 1)
 
     allocate(local_trial_basis_E_0_1(0:4, 0:1, 0:3, 0:global_thread_size_1 - 1))
     allocate(local_trial_basis_E_1_1(0:4, 0:1, 0:4, 0:global_thread_size_1 - 1))
     allocate(local_trial_basis_E_2_1(0:4,0:1,0:4,0:global_thread_size_1 - 1))
-    local_trial_basis_E_0_1(:,:,:,:) = global_trial_basis_E_0_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_trial_basis_E_0_1, 4,C_INT64_T)-1)
-    local_trial_basis_E_1_1(:,:,:,:) = global_trial_basis_E_1_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_trial_basis_E_1_1, 4,C_INT64_T)-1)
-    local_trial_basis_E_2_1(:,:,:,:) = global_trial_basis_E_2_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_trial_basis_E_2_1, 4,C_INT64_T)-1)
+    local_trial_basis_E_0_1(:,:,:,:) = 0.0
+    local_trial_basis_E_1_1(:,:,:,:) = 0.0
+    local_trial_basis_E_2_1(:,:,:,:) = 0.0
+
+!    local_trial_basis_E_0_1(:,:,:,:) = global_trial_basis_E_0_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_trial_basis_E_0_1, 4,C_INT64_T)-1)
+!    local_trial_basis_E_1_1(:,:,:,:) = global_trial_basis_E_1_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_trial_basis_E_1_1, 4,C_INT64_T)-1)
+!    local_trial_basis_E_2_1(:,:,:,:) = global_trial_basis_E_2_1(:,:,:, global_thread_starts_1(thread_coords_1):global_thread_starts_1(thread_coords_1)+size(local_trial_basis_E_2_1, 4,C_INT64_T)-1)
 
     allocate(local_trial_basis_E_0_2(0:4,0:1,0:4, 0:global_thread_size_2-1))
     allocate(local_trial_basis_E_1_2(0:4,0:1,0:3, 0:global_thread_size_2-1))
     allocate(local_trial_basis_E_2_2(0:4,0:1,0:4, 0:global_thread_size_2-1))
-    local_trial_basis_E_0_2(:,:,:,:) = global_trial_basis_E_0_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_trial_basis_E_0_2, 4,C_INT64_T) - 1)
-    local_trial_basis_E_1_2(:,:,:,:) = global_trial_basis_E_1_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_trial_basis_E_1_2, 4,C_INT64_T) - 1)
-    local_trial_basis_E_2_2(:,:,:,:) = global_trial_basis_E_2_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_trial_basis_E_2_2, 4,C_INT64_T) - 1)
+    local_trial_basis_E_0_2(:,:,:,:) = 0.0
+    local_trial_basis_E_1_2(:,:,:,:) = 0.0
+    local_trial_basis_E_2_2(:,:,:,:) = 0.0
+
+!    local_trial_basis_E_0_2(:,:,:,:) = global_trial_basis_E_0_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_trial_basis_E_0_2, 4,C_INT64_T) - 1)
+!    local_trial_basis_E_1_2(:,:,:,:) = global_trial_basis_E_1_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_trial_basis_E_1_2, 4,C_INT64_T) - 1)
+!    local_trial_basis_E_2_2(:,:,:,:) = global_trial_basis_E_2_2(:,:,:, global_thread_starts_2(thread_coords_2):global_thread_starts_2(thread_coords_2)+size(local_trial_basis_E_2_2, 4,C_INT64_T) - 1)
 
     allocate(local_trial_basis_E_0_3(0:4,0:1,0:4,0:global_thread_size_3-1))
     allocate(local_trial_basis_E_1_3(0:4,0:1,0:4,0:global_thread_size_3-1))
     allocate(local_trial_basis_E_2_3(0:4,0:1,0:3,0:global_thread_size_3-1))
-    local_trial_basis_E_0_3(:,:,:,:) = global_trial_basis_E_0_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_trial_basis_E_0_3, 4,C_INT64_T)-1)
-    local_trial_basis_E_1_3(:,:,:,:) = global_trial_basis_E_1_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_trial_basis_E_1_3, 4,C_INT64_T)-1)
-    local_trial_basis_E_2_3(:,:,:,:) = global_trial_basis_E_2_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_trial_basis_E_2_3, 4,C_INT64_T)-1)
+    local_trial_basis_E_0_3(:,:,:,:) = 0.0
+    local_trial_basis_E_1_3(:,:,:,:) = 0.0
+    local_trial_basis_E_2_3(:,:,:,:) = 0.0
+
+!    local_trial_basis_E_0_3(:,:,:,:) = global_trial_basis_E_0_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_trial_basis_E_0_3, 4,C_INT64_T)-1)
+!    local_trial_basis_E_1_3(:,:,:,:) = global_trial_basis_E_1_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_trial_basis_E_1_3, 4,C_INT64_T)-1)
+!    local_trial_basis_E_2_3(:,:,:,:) = global_trial_basis_E_2_3(:,:,:, global_thread_starts_3(thread_coords_3):global_thread_starts_3(thread_coords_3)+size(local_trial_basis_E_2_3, 4,C_INT64_T)-1)
 
     allocate(local_span_TE_0_1(0:global_thread_size_1-1))
     allocate(local_span_TE_1_1(0:global_thread_size_1-1))

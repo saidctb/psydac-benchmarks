@@ -14,6 +14,7 @@ usr
 
 *.swp
 *.log
+*.png
 
 __*pyccel__
 .env

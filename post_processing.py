@@ -77,22 +77,25 @@ for i1,p in enumerate(problems):
 
 ##########################################################################################################
 from tabulate import tabulate
-headers = [""] + [str(nn) for nn in number_of_nodes]
+headers = [""] + ['$p = {}$'.format(d) for d in degrees]
+paralle_ef = [[scaling_bi_assembly,scaling_bi_assembly_mth],[scaling_dot_p, scaling_dot_p_mth]]
+titles = ['Matrix Assembly', 'Matrix Vector Product']
 
 for i1,p in enumerate(problems):
     for i2,mapping in enumerate(mappings[i1]):
-        if all(np.isnan(v) for v in timmings_bi_assembly[i1,i2].flatten()):continue
-        mapping = ('{} analytical mapping' if mapping[1] else '{} Nurbs mapping').format(mapping[0])
-        print("="*45,"Timings of the Matrix Assembly of {} with the {}".format(p,mapping), "="*45)
-        T = np.around(timmings_dot_p_mth[i1,i2], decimals=5)
-        newT = []
-        for i3,nc in enumerate(ncells):
-            for i4,d in enumerate(degrees):
-                newT.append(["nc = {} ** 3 , p = {}".format(nc,d)] +  T[i3,i4].tolist())
-            newT.append(["   "]*len(T[0]))
-        
-        print(tabulate(newT, headers=headers, tablefmt="grid"))
-        print("\n")
+        for paralle_ef_m,title in zip(paralle_ef, titles):
+            print("="*45,"Parallel Efficency of {}".format(title), "="*45)
+            T1 = np.around(paralle_ef_m[0][i1,i2], decimals=4)
+            T2 = np.around(paralle_ef_m[1][i1,i2], decimals=4)
+            newT1 = []
+            newT2 = []
+            for i3,nc in enumerate(ncells):
+                newT1.append(["$ n_{{el}} = {}^3 $".format(nc)]+ ['{}%'.format(int(T1[i3,i4][-1]*10000)/100) for i4,d in enumerate(degrees)])
+                newT2.append(["$ n_{{el}} = {}^3 $".format(nc)]+ ['{}%'.format(int(T2[i3,i4][-1]*10000)/100) for i4,d in enumerate(degrees)])
+
+            print(tabulate(newT1, headers=headers, tablefmt="latex"))
+            print(tabulate(newT2, headers=headers, tablefmt="latex"))
+            print("\n")
 
 
 #====================================================================================================
@@ -104,13 +107,14 @@ from matplotlib.legend_handler import HandlerLine2D
 colors = np.linspace(0, 1, len(degrees))
 colors = cm.rainbow(colors)
 line_styles = ['>-','o-','s-','v-']
+markers = ['>','o','s','v']
 
 from itertools import product
 
 titles = ['Matrix Assembly', 'Matrix Vector Product','Matrix Assembly', 'Matrix Vector Product']
 fnames = ['matrix_assembly_biharmonic_strong_scaling', 'matrix_vector_product_biharmonic_strong_scaling','matrix_assembly_biharmonic_strong_scaling_multi_threading', 'matrix_vector_product_biharmonic_strong_scaling_multi_threading']
 xaxist = [r'number of nodes', r'number of nodes',r'number of nodes',r'number of nodes']
-timings = [timmings_bi_assembly[0,0], timmings_dot_p[0,0],timmings_bi_assembly_mth[0,0], timmings_dot_p_mth[0,0]]
+timings = [[timmings_bi_assembly[0,0], timmings_bi_assembly_mth[0,0]], [timmings_dot_p[0,0], timmings_dot_p_mth[0,0]]]
 
 
 #titles = ['Matrix Vector Product']
@@ -119,22 +123,27 @@ timings = [timmings_bi_assembly[0,0], timmings_dot_p[0,0],timmings_bi_assembly_m
 #timings = [timmings_dot_p_mth[0,0]]
 number_of_nodes = np.array([1,2,4,8,16,32,64])
 
-for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
+for title,fname,timings_i, xlabel in zip(titles, fnames, timings,xaxist):
     fig = plt.figure(figsize=(10,15))
     ax = fig.add_subplot(1, 1, 1)
-    ax.plot(number_of_nodes,[5*np.nanmax(timings_i)/2**d for d in range(len(number_of_mpi_procs))], color='black', linestyle='dashed', label='perfect scaling')
+    ax.plot(number_of_nodes,[5*np.nanmax(timings_i[1])/2**d for d in range(len(number_of_mpi_procs))], color='black', linestyle='dashed', label='perfect scaling')
     for nc in range(len(ncells)):
         for p in range(degrees[0],degrees[-1]+1):
 
-            mask = np.isfinite(timings_i[nc,p-degrees[0]])
-            line, = ax.plot(number_of_nodes[mask], timings_i[nc,p-degrees[0]][mask], line_styles[nc],color=colors[p-degrees[0]])
+            mask = np.isfinite(timings_i[0][nc,p-degrees[0]])
+            line, = ax.plot(number_of_nodes[mask], timings_i[0][nc,p-degrees[0]][mask], line_styles[nc],color=colors[p-degrees[0]])
+
+            mask = np.isfinite(timings_i[1][nc,p-degrees[0]])
+            line, = ax.plot(number_of_nodes[mask], timings_i[1][nc,p-degrees[0]][mask], marker=markers[nc], linestyle='dashed', color=colors[p-degrees[0]])
 
         row = '$n_{{el}}={}^3$'.format(ncells[nc])
-        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[nc,degrees[0]][mask], line_styles[nc],color='k', label=row)
+        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0][nc,0][mask], line_styles[nc],color='k', label=row)
 
     for p in range(degrees[0],degrees[-1]+1):
-        row = '$p={}$'.format(p)
-        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0,degrees[0]][mask],color=colors[p-degrees[0]], label=row)
+        row = '$p={}$ (Pure MPI)'.format(p)
+        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0][0,p-degrees[0]][mask],color=colors[p-degrees[0]], label=row)
+        row = '$p={}$ (MPI+OpenMP)'.format(p)
+        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0][0,p-degrees[0]][mask],linestyle='dashed', color=colors[p-degrees[0]], label=row)
 
 
     box = ax.get_position()

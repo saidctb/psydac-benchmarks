@@ -71,7 +71,7 @@ for i1,nc in enumerate(ncells):
 
 number_of_mpi_procs = np.array([32*7,32*7*2,32*7*2**2,32*7*2**3,32*7*2**4])
 ##-----------------------------------------------------------------------------------------------------------------------
-#from tabulate import tabulate
+from tabulate import tabulate
 #headers = [""] + [str(np) for np in number_of_mpi_procs]
 
 #if not all(np.isnan(v) for v in timmings_bi_assembly.flatten()):
@@ -86,7 +86,24 @@ number_of_mpi_procs = np.array([32*7,32*7*2,32*7*2**2,32*7*2**3,32*7*2**4])
 #    print(tabulate(newT, headers=headers, tablefmt="grid"))
 #    print("\n")
 #raise
+headers = [""] + ['$n_{{el}}={}**3, p = {}$'.format(nc,d) for nc in ncells for d in degrees]
+paralle_ef = [[scaling_bi_assembly,scaling_bi_assembly_mth],[scaling_dot_p, scaling_dot_p_mth]]
+titles = ['Matrix Assembly', 'Matrix Vector Product']
 
+
+for paralle_ef_m,title in zip(paralle_ef, titles):
+    print("="*45,"Parallel Efficency of {}".format(title), "="*45)
+    T1 = np.around(paralle_ef_m[0], decimals=4)
+    T2 = np.around(paralle_ef_m[1], decimals=4)
+    newT1 = ["Pure MPI"]
+    newT2 = ["MPI+OpenMP"]
+    for i1,nc in enumerate(ncells):
+        for i2,d in enumerate(degrees):
+            newT1.append('{}%'.format(int(T1[i1,i2][-1]*10000)/100))
+            newT2.append('{}%'.format(int(T2[i1,i2][-1]*10000)/100))
+    
+    print(tabulate([newT1, newT2], headers=headers, tablefmt="latex"))
+    print("\n")
 #====================================================================================================
 #====================================================================================================
 import numpy as np
@@ -97,32 +114,37 @@ from matplotlib.legend_handler import HandlerLine2D
 colors = np.linspace(0, 1, len(degrees))
 colors = cm.rainbow(colors)
 line_styles = ['>-','o-','s-','v-']
+markers = ['>','o','s','v']
 
 from itertools import product
 
 titles = ['Matrix Assembly', 'Matrix Vector Product','Matrix Assembly', 'Matrix Vector Product']
 fnames = ['matrix_assembly_time_maxwell_strong_scaling', 'matrix_vector_product_time_maxwell_strong_scaling','matrix_assembly_time_maxwell_strong_scaling_multi_threading', 'matrix_vector_product_time_maxwell_strong_scaling_multi_threading']
 xaxist = [r'number of nodes', r'number of nodes',r'number of nodes',r'number of nodes']
-timings = [timmings_bi_assembly, timmings_dot_p,timmings_bi_assembly_mth, timmings_dot_p_mth]
+timings = [[timmings_bi_assembly, timmings_bi_assembly_mth], [timmings_dot_p, timmings_dot_p_mth]]
 number_of_nodes = np.array([7*1,7*2,7*4,7*8,7*16])
 
 for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
     fig = plt.figure(figsize=(10,15))
     ax = fig.add_subplot(1, 1, 1)
-    ax.plot(number_of_nodes,[5*np.nanmax(timings_i)/2**d for d in range(len(number_of_nodes))], color='black', linestyle='dashed', label='perfect scaling')
+    ax.plot(number_of_nodes,[5*np.nanmax(timings_i[1])/2**d for d in range(len(number_of_nodes))], color='black', linestyle='dashed', label='perfect scaling')
     for nc in range(len(ncells)):
         for p in range(degrees[0],degrees[-1]+1):
 
-            mask = np.isfinite(timings_i[nc,p-degrees[0]])
-            line, = ax.plot(number_of_nodes[mask], timings_i[nc,p-degrees[0]][mask], line_styles[nc],color=colors[p-degrees[0]])
+            mask = np.isfinite(timings_i[0][nc,p-degrees[0]])
+            line, = ax.plot(number_of_nodes[mask], timings_i[0][nc,p-degrees[0]][mask], line_styles[nc],color=colors[p-degrees[0]])
+
+            mask = np.isfinite(timings_i[1][nc,p-degrees[0]])
+            line, = ax.plot(number_of_nodes[mask], timings_i[1][nc,p-degrees[0]][mask], marker=markers[nc], linestyle='dashed', color=colors[p-degrees[0]])
 
         row = '$n_{{el}}={}^3$'.format(ncells[nc])
-        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[nc,degrees[0]][mask], line_styles[nc],color='k', label=row)
+        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0][nc,0][mask], line_styles[nc],color='k', label=row)
 
     for p in range(degrees[0],degrees[-1]+1):
-        row = '$p={}$'.format(p)
-        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0,degrees[0]][mask],color=colors[p-degrees[0]], label=row)
-
+        row = '$p={}$, (Pure MPI)'.format(p)
+        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0][0,p-degrees[0]][mask],color=colors[p-degrees[0]], label=row)
+        row = '$p={}$, (MPI+OpenMP)'.format(p)
+        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0][0,p-degrees[0]][mask],linestyle='dashed', color=colors[p-degrees[0]], label=row)
 
     box = ax.get_position()
 #   ax.set_position([box.x0, box.y0, box.width * 0.3, box.height])

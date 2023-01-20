@@ -4,7 +4,7 @@ results_folder = 'results/'
 filename       = 'maxwell3d'
 
 number_of_mpi_procs = 7
-ncells          = [52,64]
+ncells          = [64]
 degrees         = [3,4,5]
 number_of_threads = np.array([1,2,4,8,16])
 timmings_bi_assembly     = np.zeros((len(ncells),len(degrees), len(number_of_threads)))
@@ -51,6 +51,22 @@ for i1,nc in enumerate(ncells):
 #    print(tabulate(newT, headers=headers, tablefmt="grid"))
 #    print("\n")
 #raise
+from tabulate import tabulate
+headers = [""] + ['$n_{{el}}={}**3, p = {}$'.format(nc,d) for nc in ncells for d in degrees]
+paralle_ef = [[scaling_bi_assembly],[scaling_dot_p]]
+titles = ['Matrix Assembly', 'Matrix Vector Product']
+
+for paralle_ef_m,title in zip(paralle_ef, titles):
+    print("="*45,"Parallel Efficency of {}".format(title), "="*45)
+    T1 = np.around(paralle_ef_m[0], decimals=4)
+    newT1 = [""]
+    for i3,nc in enumerate(ncells):
+        for i4,d in enumerate(degrees):
+            newT1.append('{}%'.format(int(T1[i3,i4][-1]*10000)/100))
+    
+    print(tabulate([newT1], headers=headers, tablefmt="latex"))
+    print("\n")
+
 ##====================================================================================================
 import numpy as np
 import matplotlib.pyplot as plt
@@ -65,10 +81,12 @@ colors = cm.rainbow(colors)
 
 titles = ['Matrix Assembly', 'Matrix Vector Product']
 fnames = ['matrix_assembly_time_maxwell_single_node_multi_threading', 'matrix_vector_product_time_maxwell_single_node_multi_threading']
-xaxist = [r'number of threads', r'number of threads']
+xaxist = [r'number of threads per node', r'number of threads per node']
 timings = [timmings_bi_assembly, timmings_dot_p]
 
 line_styles = ['>-','o-','s-','v-']
+markers = ['>','o','s','v']
+
 for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
     fig = plt.figure(figsize=(10,17))
 #    fig.suptitle(title)
@@ -80,11 +98,11 @@ for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
             line, = ax.plot(number_of_threads[mask], timings_i[nc,p-degrees[0]][mask], line_styles[nc],color=colors[p-degrees[0]])
 
         row = '$n_{{el}}={}^3$'.format(ncells[nc])
-        line, = ax.plot(np.nan*number_of_threads[mask], np.nan*timings_i[nc,p-degrees[0]][mask], line_styles[nc],color='k', label=row)
+        line, = ax.plot(np.nan*number_of_threads[mask], np.nan*timings_i[nc,0][mask], line_styles[nc],color='k', label=row)
             #ax.plot(number_of_threads,timings[nc,p-degrees[0]],'s', color=colors[p-degrees[0]])
 
     for p in range(degrees[0],degrees[-1]+1):
-        row = '$p={}$'.format(p)
+        row = '$p={}$ (OpenMP)'.format(p)
         line, = ax.plot(np.nan*number_of_threads[mask], np.nan*timings_i[0,p-degrees[0]][mask],color=colors[p-degrees[0]], label=row)
 
         # Shrink current axis by 20%
@@ -93,7 +111,7 @@ for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
 
         # Put a legend to the right of the current axis
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        ax.set_xlabel( xaxist, rotation='horizontal' )
+        ax.set_xlabel( xlabel, rotation='horizontal' )
         ax.set_ylabel( r'time [s]' )
         ax.set_xscale('log')
         ax.set_yscale('log')

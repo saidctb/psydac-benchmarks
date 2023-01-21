@@ -1,0 +1,10 @@
+IGA: dim=3 dof=1 order=2 geometry=3 rational=0 property=0
+Axis 0: basis=BSPLINE[2,1] rule=LEGENDRE[3] periodic=0 nnp=42 nel=40
+Axis 1: basis=BSPLINE[2,1] rule=LEGENDRE[3] periodic=0 nnp=42 nel=40
+Axis 2: basis=BSPLINE[2,1] rule=LEGENDRE[3] periodic=0 nnp=42 nel=40
+Partition - MPI: processors=[2,4,4] total=32
+Partition - nnp: sum=74088 min=2000 max=3168 max/min=1.584
+Partition - nel: sum=64000 min=2000 max=2000 max/min=1.
+Elapsed time for matrix assembly: 0.233881 seconds
+
+Elapsed time for dot product: 0.000661 seconds

@@ -588,7 +588,7 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
     coeffs_x = zeros((5,5,5), dtype='float64')
     coeffs_y = zeros((5,5,5), dtype='float64')
     coeffs_z = zeros((5,5,5), dtype='float64')
-    contribution = zeros((5, 5, 5,5,5,5), dtype='float64')
+    contribution = zeros((5, 5, 5), dtype='float64')
 
     l_mat_u_v = zeros((5, 5, 5, 9, 9, 9), dtype='float64')
     for i_element_1 in range(0, n_element_1, 1):
@@ -699,7 +699,6 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
                             temp4 = x_x2*y_x1
                             temp5 = x_x3*y_x2
                             temp6 = temp0*z_x3 + temp1*z_x1 + temp2*z_x2 - temp3*z_x2 - temp4*z_x3 - temp5*z_x1
-                            temp7 = temp6**2
                             temp8 = temp0 - temp4
                             temp9 = x_x1x3*y_x2
                             temp10 = x_x2*y_x1x3
@@ -716,14 +715,13 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
                             temp21 = x_x1x3*y_x3
                             temp22 = x_x3*y_x1x3
                             temp23 = temp21 - temp22 + x_x1*y_x3x3 - x_x3x3*y_x1
-                            temp24 = temp7**(-1)
                             temp25 = y_x3*z_x2x3
                             temp26 = y_x3x3*z_x2
                             temp27 = x_x2*z_x3x3 + x_x2x3*z_x3
                             temp28 = y_x2*z_x3x3 + y_x2x3*z_x3
                             temp29 = x_x3*z_x2x3
                             temp30 = x_x3x3*z_x2
-                            temp31 = temp24*(-temp1*z_x1x3 + temp10*z_x3 + temp18*z_x1 + temp21*z_x2 - temp22*z_x2 + temp27*y_x1 - temp28*x_x1 + temp5*z_x1x3 - temp9*z_x3 + x_x1*(temp25 + temp26) - y_x1*(temp29 + temp30) - z_x1*(temp16 + temp17))
+                            temp31 = temp14*(-temp1*z_x1x3 + temp10*z_x3 + temp18*z_x1 + temp21*z_x2 - temp22*z_x2 + temp27*y_x1 - temp28*x_x1 + temp5*z_x1x3 - temp9*z_x3 + x_x1*(temp25 + temp26) - y_x1*(temp29 + temp30) - z_x1*(temp16 + temp17))
 
                             temp35 = temp14*temp8
                             temp36 = x_x1*z_x3 - x_x3*z_x1
@@ -748,7 +746,7 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
                             temp55 = y_x2*z_x2x3 + y_x2x2*z_x3
                             temp56 = x_x2*y_x2x3
                             temp57 = x_x2x2*y_x3
-                            temp58 = temp24*(-temp1*z_x1x2 - temp37*y_x2 + temp42*y_x1x2 - temp43*y_x1x2 + temp47*y_x1 + temp5*z_x1x2 + temp50*y_x3 + temp54*z_x1 - temp55*x_x1 + x_x1*(temp52 + temp53) - y_x1*(temp45 + temp46) - z_x1*(temp56 + temp57))
+                            temp58 = temp14*(-temp1*z_x1x2 - temp37*y_x2 + temp42*y_x1x2 - temp43*y_x1x2 + temp47*y_x1 + temp5*z_x1x2 + temp50*y_x3 + temp54*z_x1 - temp55*x_x1 + x_x1*(temp52 + temp53) - y_x1*(temp45 + temp46) - z_x1*(temp56 + temp57))
 
                             temp62 = temp14*temp36
                             temp63 = y_x2*z_x3
@@ -772,7 +770,7 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
                             temp81 = temp80 + temp9
                             temp82 = x_x1x3*z_x2
                             temp83 = x_x1x2*y_x3
-                            temp84 = temp24*(-temp1*z_x1x1 + temp42*y_x1x1 - temp43*y_x1x1 + temp5*z_x1x1 - temp63*x_x1x1 + temp64*x_x1x1 - temp72*x_x1 + temp79*y_x1 + temp81*z_x1 + x_x1*(temp66 + temp68) - y_x1*(temp38 + temp82) - z_x1*(temp10 + temp83))
+                            temp84 = temp14*(-temp1*z_x1x1 + temp42*y_x1x1 - temp43*y_x1x1 + temp5*z_x1x1 - temp63*x_x1x1 + temp64*x_x1x1 - temp72*x_x1 + temp79*y_x1 + temp81*z_x1 + x_x1*(temp66 + temp68) - y_x1*(temp38 + temp82) - z_x1*(temp10 + temp83))
                             temp88 = temp14*temp65
                             temp89 = x_x1*y_x2x2 + x_x1x2*y_x2 - x_x2*y_x1x2 - x_x2x2*y_x1
                             temp90 = temp54 - temp56 - temp57
@@ -866,12 +864,9 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
                                                     temp122 = temp74*v_x2
                                                     temp123 = temp76*v_x3
 
-                                                    contribution[i_basis_1,i_basis_2,i_basis_3,j_basis_1,j_basis_2,j_basis_3] = sqrt(temp7)*(-temp100*(temp115*temp84 - temp116*temp84 - temp117*temp84 - temp14*(temp15*v_x1x1 + temp98*v_x1) - temp14*(temp20*v_x1x2 + temp99*v_x2) + temp14*(temp8*v_x1x3 + temp97*v_x3)) - temp104*(temp118*temp84 - temp119*temp84 - temp120*temp84 + temp14*(temp101*v_x2 + temp36*v_x1x2) - temp14*(temp102*v_x1 + temp44*v_x1x1) - temp14*(temp103*v_x3 + temp49*v_x1x3)) - temp110*(temp121*temp31 - temp122*temp31 - temp123*temp31 + temp14*(temp105*v_x1 + temp65*v_x1x3) - temp14*(temp106*v_x2 + temp74*v_x2x3) - temp14*(temp109*v_x3 + temp76*v_x3x3)) - temp114*(temp121*temp58 - temp122*temp58 - temp123*temp58 + temp14*(temp111*v_x1 + temp65*v_x1x2) - temp14*(temp112*v_x2 + temp74*v_x2x2) - temp14*(temp113*v_x3 + temp76*v_x2x3)) + temp35*(temp115*temp31 - temp116*temp31 - temp117*temp31 + temp14*(temp13*v_x3 + temp8*v_x3x3) - temp14*(temp15*v_x1x3 + temp19*v_x1) - temp14*(temp20*v_x2x3 + temp23*v_x2)) + temp62*(temp118*temp58 - temp119*temp58 - temp120*temp58 + temp14*(temp36*v_x2x2 + temp41*v_x2) - temp14*(temp44*v_x1x2 + temp48*v_x1) - temp14*(temp49*v_x2x3 + temp51*v_x3)) + temp88*(temp121*temp84 - temp122*temp84 - temp123*temp84 + temp14*(temp65*v_x1x1 + temp73*v_x1) - temp14*(temp74*v_x1x2 + temp75*v_x2) - temp14*(temp76*v_x1x3 + temp77*v_x3)) - temp92*(temp115*temp58 - temp116*temp58 - temp117*temp58 - temp14*(temp15*v_x1x2 + temp90*v_x1) - temp14*(temp20*v_x2x2 + temp91*v_x2) + temp14*(temp8*v_x2x3 + temp89*v_x3)) - temp96*(temp118*temp31 - temp119*temp31 - temp120*temp31 + temp14*(temp36*v_x2x3 + temp93*v_x2) - temp14*(temp44*v_x1x3 + temp94*v_x1) - temp14*(temp49*v_x3x3 + temp95*v_x3)))*(-temp100*(-temp14*(temp15*u_x1x1 + temp98*u_x1) - temp14*(temp20*u_x1x2 + temp99*u_x2) + temp14*(temp8*u_x1x3 + temp97*u_x3) + temp32*temp84 - temp33*temp84 - temp34*temp84) - temp104*(temp14*(temp101*u_x2 + temp36*u_x1x2) - temp14*(temp102*u_x1 + temp44*u_x1x1) - temp14*(temp103*u_x3 + temp49*u_x1x3) + temp59*temp84 - temp60*temp84 - temp61*temp84) - temp110*(temp14*(temp105*u_x1 + temp65*u_x1x3) - temp14*(temp106*u_x2 + temp74*u_x2x3) - temp14*(temp109*u_x3 + temp76*u_x3x3) + temp31*temp85 - temp31*temp86 - temp31*temp87) - temp114*(temp14*(temp111*u_x1 + temp65*u_x1x2) - temp14*(temp112*u_x2 + temp74*u_x2x2) - temp14*(temp113*u_x3 + temp76*u_x2x3) + temp58*temp85 - temp58*temp86 - temp58*temp87) + temp35*(temp14*(temp13*u_x3 + temp8*u_x3x3) - temp14*(temp15*u_x1x3 + temp19*u_x1) - temp14*(temp20*u_x2x3 + temp23*u_x2) + temp31*temp32 - temp31*temp33 - temp31*temp34) + temp62*(temp14*(temp36*u_x2x2 + temp41*u_x2) - temp14*(temp44*u_x1x2 + temp48*u_x1) - temp14*(temp49*u_x2x3 + temp51*u_x3) + temp58*temp59 - temp58*temp60 - temp58*temp61) + temp88*(temp14*(temp65*u_x1x1 + temp73*u_x1) - temp14*(temp74*u_x1x2 + temp75*u_x2) - temp14*(temp76*u_x1x3 + temp77*u_x3) + temp84*temp85 - temp84*temp86 - temp84*temp87) - temp92*(-temp14*(temp15*u_x1x2 + temp90*u_x1) - temp14*(temp20*u_x2x2 + temp91*u_x2) + temp14*(temp8*u_x2x3 + temp89*u_x3) + temp32*temp58 - temp33*temp58 - temp34*temp58) - temp96*(temp14*(temp36*u_x2x3 + temp93*u_x2) - temp14*(temp44*u_x1x3 + temp94*u_x1) - temp14*(temp49*u_x3x3 + temp95*u_x3) + temp31*temp59 - temp31*temp60 - temp31*temp61))
+                                                    contribution[j_basis_1,j_basis_2,j_basis_3] = temp6*(-temp100*(temp115*temp84 - temp116*temp84 - temp117*temp84 - temp14*(temp15*v_x1x1 + temp98*v_x1) - temp14*(temp20*v_x1x2 + temp99*v_x2) + temp14*(temp8*v_x1x3 + temp97*v_x3)) - temp104*(temp118*temp84 - temp119*temp84 - temp120*temp84 + temp14*(temp101*v_x2 + temp36*v_x1x2) - temp14*(temp102*v_x1 + temp44*v_x1x1) - temp14*(temp103*v_x3 + temp49*v_x1x3)) - temp110*(temp121*temp31 - temp122*temp31 - temp123*temp31 + temp14*(temp105*v_x1 + temp65*v_x1x3) - temp14*(temp106*v_x2 + temp74*v_x2x3) - temp14*(temp109*v_x3 + temp76*v_x3x3)) - temp114*(temp121*temp58 - temp122*temp58 - temp123*temp58 + temp14*(temp111*v_x1 + temp65*v_x1x2) - temp14*(temp112*v_x2 + temp74*v_x2x2) - temp14*(temp113*v_x3 + temp76*v_x2x3)) + temp35*(temp115*temp31 - temp116*temp31 - temp117*temp31 + temp14*(temp13*v_x3 + temp8*v_x3x3) - temp14*(temp15*v_x1x3 + temp19*v_x1) - temp14*(temp20*v_x2x3 + temp23*v_x2)) + temp62*(temp118*temp58 - temp119*temp58 - temp120*temp58 + temp14*(temp36*v_x2x2 + temp41*v_x2) - temp14*(temp44*v_x1x2 + temp48*v_x1) - temp14*(temp49*v_x2x3 + temp51*v_x3)) + temp88*(temp121*temp84 - temp122*temp84 - temp123*temp84 + temp14*(temp65*v_x1x1 + temp73*v_x1) - temp14*(temp74*v_x1x2 + temp75*v_x2) - temp14*(temp76*v_x1x3 + temp77*v_x3)) - temp92*(temp115*temp58 - temp116*temp58 - temp117*temp58 - temp14*(temp15*v_x1x2 + temp90*v_x1) - temp14*(temp20*v_x2x2 + temp91*v_x2) + temp14*(temp8*v_x2x3 + temp89*v_x3)) - temp96*(temp118*temp31 - temp119*temp31 - temp120*temp31 + temp14*(temp36*v_x2x3 + temp93*v_x2) - temp14*(temp44*v_x1x3 + temp94*v_x1) - temp14*(temp49*v_x3x3 + temp95*v_x3)))*(-temp100*(-temp14*(temp15*u_x1x1 + temp98*u_x1) - temp14*(temp20*u_x1x2 + temp99*u_x2) + temp14*(temp8*u_x1x3 + temp97*u_x3) + temp32*temp84 - temp33*temp84 - temp34*temp84) - temp104*(temp14*(temp101*u_x2 + temp36*u_x1x2) - temp14*(temp102*u_x1 + temp44*u_x1x1) - temp14*(temp103*u_x3 + temp49*u_x1x3) + temp59*temp84 - temp60*temp84 - temp61*temp84) - temp110*(temp14*(temp105*u_x1 + temp65*u_x1x3) - temp14*(temp106*u_x2 + temp74*u_x2x3) - temp14*(temp109*u_x3 + temp76*u_x3x3) + temp31*temp85 - temp31*temp86 - temp31*temp87) - temp114*(temp14*(temp111*u_x1 + temp65*u_x1x2) - temp14*(temp112*u_x2 + temp74*u_x2x2) - temp14*(temp113*u_x3 + temp76*u_x2x3) + temp58*temp85 - temp58*temp86 - temp58*temp87) + temp35*(temp14*(temp13*u_x3 + temp8*u_x3x3) - temp14*(temp15*u_x1x3 + temp19*u_x1) - temp14*(temp20*u_x2x3 + temp23*u_x2) + temp31*temp32 - temp31*temp33 - temp31*temp34) + temp62*(temp14*(temp36*u_x2x2 + temp41*u_x2) - temp14*(temp44*u_x1x2 + temp48*u_x1) - temp14*(temp49*u_x2x3 + temp51*u_x3) + temp58*temp59 - temp58*temp60 - temp58*temp61) + temp88*(temp14*(temp65*u_x1x1 + temp73*u_x1) - temp14*(temp74*u_x1x2 + temp75*u_x2) - temp14*(temp76*u_x1x3 + temp77*u_x3) + temp84*temp85 - temp84*temp86 - temp84*temp87) - temp92*(-temp14*(temp15*u_x1x2 + temp90*u_x1) - temp14*(temp20*u_x2x2 + temp91*u_x2) + temp14*(temp8*u_x2x3 + temp89*u_x3) + temp32*temp58 - temp33*temp58 - temp34*temp58) - temp96*(temp14*(temp36*u_x2x3 + temp93*u_x2) - temp14*(temp44*u_x1x3 + temp94*u_x1) - temp14*(temp49*u_x3x3 + temp95*u_x3) + temp31*temp59 - temp31*temp60 - temp31*temp61))
 
-                            for i_basis_1 in range(0, 5, 1):
-                                for i_basis_2 in range(0, 5, 1):
-                                    for i_basis_3 in range(0, 5, 1):
-                                        l_mat_u_v[i_basis_1,i_basis_2,i_basis_3,4 - i_basis_1:9 - i_basis_1,4 - i_basis_2:9 - i_basis_2,4 - i_basis_3:9 - i_basis_3] += contribution[i_basis_1,i_basis_2,i_basis_3,:,:,:]
+                                        l_mat_u_v[i_basis_1,i_basis_2,i_basis_3,4 - i_basis_1:9 - i_basis_1,4 - i_basis_2:9 - i_basis_2,4 - i_basis_3:9 - i_basis_3] += contribution[:,:,:]
                 g_mat_u_v_z6fv8xca[span_v_1:5 + span_v_1,span_v_2:5 + span_v_2,span_v_3:5 + span_v_3,:,:,:] += l_mat_u_v[:,:,:,:,:,:]
 
     return

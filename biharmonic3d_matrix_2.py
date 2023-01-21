@@ -602,6 +602,7 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
                 coeffs_x[:,:,:] = global_coeffs_x[span_mapping_v_1:5 + span_mapping_v_1,span_mapping_v_2:5 + span_mapping_v_2,span_mapping_v_3:5 + span_mapping_v_3]
                 coeffs_y[:,:,:] = global_coeffs_y[span_mapping_v_1:5 + span_mapping_v_1,span_mapping_v_2:5 + span_mapping_v_2,span_mapping_v_3:5 + span_mapping_v_3]
                 coeffs_z[:,:,:] = global_coeffs_z[span_mapping_v_1:5 + span_mapping_v_1,span_mapping_v_2:5 + span_mapping_v_2,span_mapping_v_3:5 + span_mapping_v_3]
+                l_mat_u_v[:,:,:,:,:,:] = 0.
                 for i_quad_1 in range(0, 5, 1):
                     for i_quad_2 in range(0, 5, 1):
                         for i_quad_3 in range(0, 5, 1):

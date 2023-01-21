@@ -55,17 +55,17 @@ def assemble_matrix_z6fv8xca(global_test_basis_v_1, global_test_basis_v_2, globa
                             z_x1x2  = 0.
                             z_x1x1  = 0.
                             for i_basis_1 in range(0, 4, 1):
-                                mapping_v_1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,0,i_quad_1]
-                                mapping_v_1_x1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,1,i_quad_1]
-                                mapping_v_1_x1x1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,2,i_quad_1]
+                                mapping_v_1 = global_test_basis_mapping_v_1[i_element_1,i_quad_1,i_basis_1,0]
+                                mapping_v_1_x1 = global_test_basis_mapping_v_1[i_element_1,i_quad_1,i_basis_1,1]
+                                mapping_v_1_x1x1 = global_test_basis_mapping_v_1[i_element_1,i_quad_1,i_basis_1,2]
                                 for i_basis_2 in range(0, 4, 1):
-                                    mapping_v_2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,0,i_quad_2]
-                                    mapping_v_2_x2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,1,i_quad_2]
-                                    mapping_v_2_x2x2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,2,i_quad_2]
+                                    mapping_v_2 = global_test_basis_mapping_v_2[i_element_2,i_quad_2,i_basis_2,0]
+                                    mapping_v_2_x2 = global_test_basis_mapping_v_2[i_element_2,i_quad_2,i_basis_2,1]
+                                    mapping_v_2_x2x2 = global_test_basis_mapping_v_2[i_element_2,i_quad_2,i_basis_2,2]
                                     for i_basis_3 in range(0, 4, 1):
-                                        mapping_v_3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,0,i_quad_3]
-                                        mapping_v_3_x3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,1,i_quad_3]
-                                        mapping_v_3_x3x3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,2,i_quad_3]
+                                        mapping_v_3 = global_test_basis_mapping_v_3[i_element_3,i_quad_3,i_basis_3,0]
+                                        mapping_v_3_x3 = global_test_basis_mapping_v_3[i_element_3,i_quad_3,i_basis_3,1]
+                                        mapping_v_3_x3x3 = global_test_basis_mapping_v_3[i_element_3,i_quad_3,i_basis_3,2]
                                         coeff_x = coeffs_x[i_basis_1,i_basis_2,i_basis_3]
                                         coeff_y = coeffs_y[i_basis_1,i_basis_2,i_basis_3]
                                         coeff_z = coeffs_z[i_basis_1,i_basis_2,i_basis_3]
@@ -219,29 +219,29 @@ def assemble_matrix_z6fv8xca(global_test_basis_v_1, global_test_basis_v_2, globa
                             temp113 = -y_x1*z_x2x2 - y_x1x2*z_x2 + y_x2*z_x1x2 + y_x2x2*z_x1
                             temp114 = temp14*temp74
                             for i_basis_1 in range(0, 4, 1):
-                                v_1 = global_test_basis_v_1[i_element_1,i_basis_1,0,i_quad_1]    
-                                v_1_x1 = global_test_basis_v_1[i_element_1,i_basis_1,1,i_quad_1]
-                                v_1_x1x1 = global_test_basis_v_1[i_element_1,i_basis_1,2,i_quad_1]
+                                v_1 = global_test_basis_v_1[i_element_1,i_quad_1,i_basis_1,0]    
+                                v_1_x1 = global_test_basis_v_1[i_element_1,i_quad_1,i_basis_1,1]
+                                v_1_x1x1 = global_test_basis_v_1[i_element_1,i_quad_1,i_basis_1,2]
                                 for i_basis_2 in range(0, 4, 1):
-                                    v_2 = global_test_basis_v_2[i_element_2,i_basis_2,0,i_quad_2]
-                                    v_2_x2 = global_test_basis_v_2[i_element_2,i_basis_2,1,i_quad_2]
-                                    v_2_x2x2 = global_test_basis_v_2[i_element_2,i_basis_2,2,i_quad_2]
+                                    v_2 = global_test_basis_v_2[i_element_2,i_quad_2,i_basis_2,0]
+                                    v_2_x2 = global_test_basis_v_2[i_element_2,i_quad_2,i_basis_2,1]
+                                    v_2_x2x2 = global_test_basis_v_2[i_element_2,i_quad_2,i_basis_2,2]
                                     for i_basis_3 in range(0, 4, 1):
-                                        v_3 = global_test_basis_v_3[i_element_3,i_basis_3,0,i_quad_3]
-                                        v_3_x3 = global_test_basis_v_3[i_element_3,i_basis_3,1,i_quad_3]
-                                        v_3_x3x3 = global_test_basis_v_3[i_element_3,i_basis_3,2,i_quad_3]
+                                        v_3 = global_test_basis_v_3[i_element_3,i_quad_3,i_basis_3,0]
+                                        v_3_x3 = global_test_basis_v_3[i_element_3,i_quad_3,i_basis_3,1]
+                                        v_3_x3x3 = global_test_basis_v_3[i_element_3,i_quad_3,i_basis_3,2]
                                         for j_basis_1 in range(0, 4, 1):
-                                            u_1 = global_trial_basis_u_1[i_element_1,j_basis_1,0,i_quad_1]
-                                            u_1_x1 = global_trial_basis_u_1[i_element_1,j_basis_1,1,i_quad_1]
-                                            u_1_x1x1 = global_trial_basis_u_1[i_element_1,j_basis_1,2,i_quad_1]
+                                            u_1 = global_trial_basis_u_1[i_element_1,i_quad_1,j_basis_1,0]
+                                            u_1_x1 = global_trial_basis_u_1[i_element_1,i_quad_1,j_basis_1,1]
+                                            u_1_x1x1 = global_trial_basis_u_1[i_element_1,i_quad_1,j_basis_1,2]
                                             for j_basis_2 in range(0, 4, 1):
-                                                u_2 = global_trial_basis_u_2[i_element_2,j_basis_2,0,i_quad_2]
-                                                u_2_x2 = global_trial_basis_u_2[i_element_2,j_basis_2,1,i_quad_2]
-                                                u_2_x2x2 = global_trial_basis_u_2[i_element_2,j_basis_2,2,i_quad_2]
+                                                u_2 = global_trial_basis_u_2[i_element_2,i_quad_2,j_basis_2,0]
+                                                u_2_x2 = global_trial_basis_u_2[i_element_2,i_quad_2,j_basis_2,1]
+                                                u_2_x2x2 = global_trial_basis_u_2[i_element_2,i_quad_2,j_basis_2,2]
                                                 for j_basis_3 in range(0, 4, 1):
-                                                    u_3 = global_trial_basis_u_3[i_element_3,j_basis_3,0,i_quad_3]
-                                                    u_3_x3 = global_trial_basis_u_3[i_element_3,j_basis_3,1,i_quad_3]
-                                                    u_3_x3x3 = global_trial_basis_u_3[i_element_3,j_basis_3,2,i_quad_3]
+                                                    u_3 = global_trial_basis_u_3[i_element_3,i_quad_3,j_basis_3,0]
+                                                    u_3_x3 = global_trial_basis_u_3[i_element_3,i_quad_3,j_basis_3,1]
+                                                    u_3_x3x3 = global_trial_basis_u_3[i_element_3,i_quad_3,j_basis_3,2]
 
                                                     v = v_1*v_2*v_3
                                                     v_x3 = v_1*v_2*v_3_x3

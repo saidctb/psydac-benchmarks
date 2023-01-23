@@ -1,22 +1,17 @@
 from pyccel.decorators import types
+
 @types("float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "float64[:,:]", "float64[:,:]", "float64[:,:]", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "float64[:,:,:]", "float64[:,:,:]", "float64[:,:,:]", "float64[:,:,:,:,:,:]", "int64[:,:]", "int64[:,:,:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64")
 def assemble_matrix_2(global_test_basis_v_1, global_test_basis_v_2, global_test_basis_v_3, global_trial_basis_u_1, global_trial_basis_u_2, global_trial_basis_u_3, global_test_basis_mapping_v_1, global_test_basis_mapping_v_2, global_test_basis_mapping_v_3, global_span_v_1, global_span_v_2, global_span_v_3, global_span_mapping_v_1, global_span_mapping_v_2, global_span_mapping_v_3, global_x1, global_x2, global_x3, test_v_p1, test_v_p2, test_v_p3, trial_u_p1, trial_u_p2, trial_u_p3, test_mapping_v_p1, test_mapping_v_p2, test_mapping_v_p3, n_element_1, n_element_2, n_element_3, k1, k2, k3, pad1, pad2, pad3, global_arr_coeffs_x, global_arr_coeffs_y, global_arr_coeffs_z, g_mat_u_v_lkv1k31k, coords_from_rank, rank_from_coords, global_thread_starts_1, global_thread_starts_2, global_thread_starts_3, global_thread_ends_1, global_thread_ends_2, global_thread_ends_3, num_threads):
 
     from numpy import array, zeros, zeros_like, floor
     from math import sqrt
     from pyccel.stdlib.internal.openmp import omp_get_thread_num
-    local_x1 = zeros_like(global_x1[0,:])
-    local_x2 = zeros_like(global_x2[0,:])
-    local_x3 = zeros_like(global_x3[0,:])
     arr_coeffs_x = zeros((1 + test_mapping_v_p1, 1 + test_mapping_v_p2, 1 + test_mapping_v_p3), dtype='float64')
     arr_coeffs_y = zeros((1 + test_mapping_v_p1, 1 + test_mapping_v_p2, 1 + test_mapping_v_p3), dtype='float64')
     arr_coeffs_z = zeros((1 + test_mapping_v_p1, 1 + test_mapping_v_p2, 1 + test_mapping_v_p3), dtype='float64')
-    
-    thread_spans_v_1 = zeros((3,), dtype='int64')
-    thread_spans_v_2 = zeros((3,), dtype='int64')
-    thread_spans_v_3 = zeros((3,), dtype='int64')
+
     #$ omp parallel default(private) &
-    #$ shared(thread_spans_v_1,thread_spans_v_2,thread_spans_v_3,coords_from_rank,rank_from_coords,global_thread_starts_1,global_thread_starts_2,global_thread_starts_3,global_thread_ends_1,global_thread_ends_2,global_thread_ends_3,global_test_basis_v_1,global_test_basis_v_2,global_test_basis_v_3,global_trial_basis_u_1,global_trial_basis_u_2,global_trial_basis_u_3,global_span_v_1,global_span_v_2,global_span_v_3,global_x1,global_x2,global_x3,g_mat_u_v_lkv1k31k,global_arr_coeffs_x,global_arr_coeffs_y,global_arr_coeffs_z,global_test_basis_mapping_v_1,global_test_basis_mapping_v_2,global_test_basis_mapping_v_3,global_span_mapping_v_1,global_span_mapping_v_2,global_span_mapping_v_3) &
+    #$ shared(coords_from_rank,rank_from_coords,global_thread_starts_1,global_thread_starts_2,global_thread_starts_3,global_thread_ends_1,global_thread_ends_2,global_thread_ends_3,global_test_basis_v_1,global_test_basis_v_2,global_test_basis_v_3,global_trial_basis_u_1,global_trial_basis_u_2,global_trial_basis_u_3,global_span_v_1,global_span_v_2,global_span_v_3,global_x1,global_x2,global_x3,g_mat_u_v_lkv1k31k,global_arr_coeffs_x,global_arr_coeffs_y,global_arr_coeffs_z,global_test_basis_mapping_v_1,global_test_basis_mapping_v_2,global_test_basis_mapping_v_3,global_span_mapping_v_1,global_span_mapping_v_2,global_span_mapping_v_3) &
     #$ firstprivate(test_v_p1,test_v_p2,test_v_p3,trial_u_p1,trial_u_p2,trial_u_p3,n_element_1,n_element_2,n_element_3,k1,k2,k3,pad1,pad2,pad3,num_threads,test_mapping_v_p1,test_mapping_v_p2,test_mapping_v_p3) 
     l_mat_u_v_lkv1k31k = zeros((3, 3, 3, 5, 5, 5), dtype='float64')
     thread_id = omp_get_thread_num()
@@ -26,55 +21,25 @@ def assemble_matrix_2(global_test_basis_v_1, global_test_basis_v_2, global_test_
     global_thread_size_1 = 1 + global_thread_ends_1[thread_coords_1] - global_thread_starts_1[thread_coords_1]
     global_thread_size_2 = 1 + global_thread_ends_2[thread_coords_2] - global_thread_starts_2[thread_coords_2]
     global_thread_size_3 = 1 + global_thread_ends_3[thread_coords_3] - global_thread_starts_3[thread_coords_3]
-    local_thread_starts_1 = array((0, int((1/2)*global_thread_size_1)))
-    local_thread_starts_2 = array((0, int((1/2)*global_thread_size_2)))
-    local_thread_starts_3 = array((0, int((1/2)*global_thread_size_3)))
-    local_thread_ends_1 = array((int((1/2)*global_thread_size_1), global_thread_size_1))
-    local_thread_ends_2 = array((int((1/2)*global_thread_size_2), global_thread_size_2))
-    local_thread_ends_3 = array((int((1/2)*global_thread_size_3), global_thread_size_3))
-    local_test_basis_v_1 = zeros((global_thread_size_1, 3, 3, 3), dtype='float64')
-    local_test_basis_v_1[:,:,:,:] = global_test_basis_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:3,:]
-    local_test_basis_v_2 = zeros((global_thread_size_2, 3, 3, 3), dtype='float64')
-    local_test_basis_v_2[:,:,:,:] = global_test_basis_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2],:,:3,:]
-    local_test_basis_v_3 = zeros((global_thread_size_3, 3, 3, 3), dtype='float64')
-    local_test_basis_v_3[:,:,:,:] = global_test_basis_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3],:,:3,:]
-    local_trial_basis_u_1 = zeros((global_thread_size_1, 3, 3, 3), dtype='float64')
-    local_trial_basis_u_1[:,:,:,:] = global_trial_basis_u_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:3,:]
-    local_trial_basis_u_2 = zeros((global_thread_size_2, 3, 3, 3), dtype='float64')
-    local_trial_basis_u_2[:,:,:,:] = global_trial_basis_u_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2],:,:3,:]
-    local_trial_basis_u_3 = zeros((global_thread_size_3, 3, 3, 3), dtype='float64')
-    local_trial_basis_u_3[:,:,:,:] = global_trial_basis_u_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3],:,:3,:]
-    local_span_v_1 = zeros((global_thread_size_1,), dtype='int64')
-    local_span_v_1[:] = global_span_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1]]
-    local_span_v_2 = zeros((global_thread_size_2,), dtype='int64')
-    local_span_v_2[:] = global_span_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2]]
-    local_span_v_3 = zeros((global_thread_size_3,), dtype='int64')
-    local_span_v_3[:] = global_span_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3]]
-    local_test_basis_mapping_v_1 = zeros((global_thread_size_1, 3, 3, 3), dtype='float64')
-    local_test_basis_mapping_v_1[:,:,:,:] = global_test_basis_mapping_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:3,:]
-    local_test_basis_mapping_v_2 = zeros((global_thread_size_2, 3, 3, 3), dtype='float64')
-    local_test_basis_mapping_v_2[:,:,:,:] = global_test_basis_mapping_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2],:,:3,:]
-    local_test_basis_mapping_v_3 = zeros((global_thread_size_3, 3, 3, 3), dtype='float64')
-    local_test_basis_mapping_v_3[:,:,:,:] = global_test_basis_mapping_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3],:,:3,:]
-    local_span_mapping_v_1 = zeros((global_thread_size_1,), dtype='int64')
-    local_span_mapping_v_1[:] = global_span_mapping_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1]]
-    local_span_mapping_v_2 = zeros((global_thread_size_2,), dtype='int64')
-    local_span_mapping_v_2[:] = global_span_mapping_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2]]
-    local_span_mapping_v_3 = zeros((global_thread_size_3,), dtype='int64')
-    local_span_mapping_v_3[:] = global_span_mapping_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3]]
+    local_thread_starts_1 = array((global_thread_starts_1[thread_coords_1], global_thread_starts_1[thread_coords_1]+int((1/2)*global_thread_size_1)))
+    local_thread_starts_2 = array((global_thread_starts_2[thread_coords_2], global_thread_starts_2[thread_coords_2]+int((1/2)*global_thread_size_2)))
+    local_thread_starts_3 = array((global_thread_starts_3[thread_coords_3], global_thread_starts_3[thread_coords_3]+int((1/2)*global_thread_size_3)))
+    local_thread_ends_1 = array((global_thread_starts_1[thread_coords_1]+int((1/2)*global_thread_size_1), global_thread_ends_1[thread_coords_1]))
+    local_thread_ends_2 = array((global_thread_starts_2[thread_coords_2]+int((1/2)*global_thread_size_2), global_thread_ends_2[thread_coords_2]))
+    local_thread_ends_3 = array((global_thread_starts_3[thread_coords_3]+int((1/2)*global_thread_size_3), global_thread_ends_3[thread_coords_3]))
     for local_i_element_1 in range(0, 2, 1):
         for local_i_element_2 in range(0, 2, 1):
             for local_i_element_3 in range(0, 2, 1):
                 #$omp barrier
                 for i_element_1 in range(local_thread_starts_1[local_i_element_1], local_thread_ends_1[local_i_element_1], 1):
-                    span_v_1 = local_span_v_1[i_element_1]
-                    span_mapping_v_1 = local_span_mapping_v_1[i_element_1]
+                    span_v_1 = global_span_v_1[i_element_1]
+                    span_mapping_v_1 = global_span_mapping_v_1[i_element_1]
                     for i_element_2 in range(local_thread_starts_2[local_i_element_2], local_thread_ends_2[local_i_element_2], 1):
-                        span_v_2 = local_span_v_2[i_element_2]
-                        span_mapping_v_2 = local_span_mapping_v_2[i_element_2]
+                        span_v_2 = global_span_v_2[i_element_2]
+                        span_mapping_v_2 = global_span_mapping_v_2[i_element_2]
                         for i_element_3 in range(local_thread_starts_3[local_i_element_3], local_thread_ends_3[local_i_element_3], 1):
-                            span_v_3 = local_span_v_3[i_element_3]
-                            span_mapping_v_3 = local_span_mapping_v_3[i_element_3]
+                            span_v_3 = global_span_v_3[i_element_3]
+                            span_mapping_v_3 = global_span_mapping_v_3[i_element_3]
                             arr_coeffs_x[:,:,:] = global_arr_coeffs_x[2 + span_mapping_v_1 - test_mapping_v_p1:3 + span_mapping_v_1,2 + span_mapping_v_2 - test_mapping_v_p2:3 + span_mapping_v_2,2 + span_mapping_v_3 - test_mapping_v_p3:3 + span_mapping_v_3]
                             arr_coeffs_y[:,:,:] = global_arr_coeffs_y[2 + span_mapping_v_1 - test_mapping_v_p1:3 + span_mapping_v_1,2 + span_mapping_v_2 - test_mapping_v_p2:3 + span_mapping_v_2,2 + span_mapping_v_3 - test_mapping_v_p3:3 + span_mapping_v_3]
                             arr_coeffs_z[:,:,:] = global_arr_coeffs_z[2 + span_mapping_v_1 - test_mapping_v_p1:3 + span_mapping_v_1,2 + span_mapping_v_2 - test_mapping_v_p2:3 + span_mapping_v_2,2 + span_mapping_v_3 - test_mapping_v_p3:3 + span_mapping_v_3]
@@ -112,17 +77,17 @@ def assemble_matrix_2(global_test_basis_v_1, global_test_basis_v_2, global_test_
                                         z_x1x2  = 0.
                                         z_x1x1  = 0.
                                         for i_basis_1 in range(0, 3, 1):
-                                            mapping_v_1 = local_test_basis_mapping_v_1[i_element_1,i_basis_1,0,i_quad_1]
-                                            mapping_v_1_x1 = local_test_basis_mapping_v_1[i_element_1,i_basis_1,1,i_quad_1]
-                                            mapping_v_1_x1x1 = local_test_basis_mapping_v_1[i_element_1,i_basis_1,2,i_quad_1]
+                                            mapping_v_1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,0,i_quad_1]
+                                            mapping_v_1_x1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,1,i_quad_1]
+                                            mapping_v_1_x1x1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,2,i_quad_1]
                                             for i_basis_2 in range(0, 3, 1):
-                                                mapping_v_2 = local_test_basis_mapping_v_2[i_element_2,i_basis_2,0,i_quad_2]
-                                                mapping_v_2_x2 = local_test_basis_mapping_v_2[i_element_2,i_basis_2,1,i_quad_2]
-                                                mapping_v_2_x2x2 = local_test_basis_mapping_v_2[i_element_2,i_basis_2,2,i_quad_2]
+                                                mapping_v_2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                mapping_v_2_x2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,1,i_quad_2]
+                                                mapping_v_2_x2x2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,2,i_quad_2]
                                                 for i_basis_3 in range(0, 3, 1):
-                                                    mapping_v_3 = local_test_basis_mapping_v_3[i_element_3,i_basis_3,0,i_quad_3]
-                                                    mapping_v_3_x3 = local_test_basis_mapping_v_3[i_element_3,i_basis_3,1,i_quad_3]
-                                                    mapping_v_3_x3x3 = local_test_basis_mapping_v_3[i_element_3,i_basis_3,2,i_quad_3]
+                                                    mapping_v_3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                    mapping_v_3_x3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,1,i_quad_3]
+                                                    mapping_v_3_x3x3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,2,i_quad_3]
                                                     coeff_x = arr_coeffs_x[i_basis_1,i_basis_2,i_basis_3]
                                                     coeff_y = arr_coeffs_y[i_basis_1,i_basis_2,i_basis_3]
                                                     coeff_z = arr_coeffs_z[i_basis_1,i_basis_2,i_basis_3]
@@ -168,29 +133,30 @@ def assemble_matrix_2(global_test_basis_v_1, global_test_basis_v_2, global_test_
                                                     z_x1x1 += mapping_v_x1x1*coeff_z
 
                                         for i_basis_1 in range(0, 3, 1):
+                                            v_1 = global_test_basis_v_1[i_element_1,i_basis_1,0,i_quad_1]
+                                            v_1_x1 = global_test_basis_v_1[i_element_1,i_basis_1,1,i_quad_1]
+                                            v_1_x1x1 = global_test_basis_v_1[i_element_1,i_basis_1,2,i_quad_1]
                                             for i_basis_2 in range(0, 3, 1):
+                                                v_2 = global_test_basis_v_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                v_2_x2 = global_test_basis_v_2[i_element_2,i_basis_2,1,i_quad_2]
+                                                v_2_x2x2 = global_test_basis_v_2[i_element_2,i_basis_2,2,i_quad_2]
                                                 for i_basis_3 in range(0, 3, 1):
+                                                    v_3 = global_test_basis_v_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                    v_3_x3 = global_test_basis_v_3[i_element_3,i_basis_3,1,i_quad_3]
+                                                    v_3_x3x3 = global_test_basis_v_3[i_element_3,i_basis_3,2,i_quad_3]
                                                     for j_basis_1 in range(0, 3, 1):
+                                                        u_1 = global_trial_basis_u_1[i_element_1,j_basis_1,0,i_quad_1]
+                                                        u_1_x1 = global_trial_basis_u_1[i_element_1,j_basis_1,1,i_quad_1]
+                                                        u_1_x1x1 = global_trial_basis_u_1[i_element_1,j_basis_1,2,i_quad_1]
                                                         for j_basis_2 in range(0, 3, 1):
+                                                            u_2 = global_trial_basis_u_2[i_element_2,j_basis_2,0,i_quad_2]
+                                                            u_2_x2 = global_trial_basis_u_2[i_element_2,j_basis_2,1,i_quad_2]
+                                                            u_2_x2x2 = global_trial_basis_u_2[i_element_2,j_basis_2,2,i_quad_2]
                                                             for j_basis_3 in range(0, 3, 1):
-                                                                v_1 = local_test_basis_v_1[i_element_1,i_basis_1,0,i_quad_1]
-                                                                v_1_x1 = local_test_basis_v_1[i_element_1,i_basis_1,1,i_quad_1]
-                                                                v_1_x1x1 = local_test_basis_v_1[i_element_1,i_basis_1,2,i_quad_1]
-                                                                u_1 = local_trial_basis_u_1[i_element_1,j_basis_1,0,i_quad_1]
-                                                                u_1_x1 = local_trial_basis_u_1[i_element_1,j_basis_1,1,i_quad_1]
-                                                                u_1_x1x1 = local_trial_basis_u_1[i_element_1,j_basis_1,2,i_quad_1]
-                                                                v_2 = local_test_basis_v_2[i_element_2,i_basis_2,0,i_quad_2]
-                                                                v_2_x2 = local_test_basis_v_2[i_element_2,i_basis_2,1,i_quad_2]
-                                                                v_2_x2x2 = local_test_basis_v_2[i_element_2,i_basis_2,2,i_quad_2]
-                                                                u_2 = local_trial_basis_u_2[i_element_2,j_basis_2,0,i_quad_2]
-                                                                u_2_x2 = local_trial_basis_u_2[i_element_2,j_basis_2,1,i_quad_2]
-                                                                u_2_x2x2 = local_trial_basis_u_2[i_element_2,j_basis_2,2,i_quad_2]
-                                                                v_3 = local_test_basis_v_3[i_element_3,i_basis_3,0,i_quad_3]
-                                                                v_3_x3 = local_test_basis_v_3[i_element_3,i_basis_3,1,i_quad_3]
-                                                                v_3_x3x3 = local_test_basis_v_3[i_element_3,i_basis_3,2,i_quad_3]
-                                                                u_3 = local_trial_basis_u_3[i_element_3,j_basis_3,0,i_quad_3]
-                                                                u_3_x3 = local_trial_basis_u_3[i_element_3,j_basis_3,1,i_quad_3]
-                                                                u_3_x3x3 = local_trial_basis_u_3[i_element_3,j_basis_3,2,i_quad_3]
+                                                                u_3 = global_trial_basis_u_3[i_element_3,j_basis_3,0,i_quad_3]
+                                                                u_3_x3 = global_trial_basis_u_3[i_element_3,j_basis_3,1,i_quad_3]
+                                                                u_3_x3x3 = global_trial_basis_u_3[i_element_3,j_basis_3,2,i_quad_3]
+
                                                                 v = v_1*v_2*v_3
                                                                 v_x3 = v_1*v_2*v_3_x3
                                                                 v_x3x3 = v_1*v_2*v_3_x3x3
@@ -337,12 +303,11 @@ def assemble_matrix_2(global_test_basis_v_1, global_test_basis_v_2, global_test_
                                                                 temp123 = temp76*v_x3
                                                                 contribution_v_u_lkv1k31k = sqrt(temp7)*(-temp100*(temp115*temp84 - temp116*temp84 - temp117*temp84 - temp14*(temp15*v_x1x1 + temp98*v_x1) - temp14*(temp20*v_x1x2 + temp99*v_x2) + temp14*(temp8*v_x1x3 + temp97*v_x3)) - temp104*(temp118*temp84 - temp119*temp84 - temp120*temp84 + temp14*(temp101*v_x2 + temp36*v_x1x2) - temp14*(temp102*v_x1 + temp44*v_x1x1) - temp14*(temp103*v_x3 + temp49*v_x1x3)) - temp110*(temp121*temp31 - temp122*temp31 - temp123*temp31 + temp14*(temp105*v_x1 + temp65*v_x1x3) - temp14*(temp106*v_x2 + temp74*v_x2x3) - temp14*(temp109*v_x3 + temp76*v_x3x3)) - temp114*(temp121*temp58 - temp122*temp58 - temp123*temp58 + temp14*(temp111*v_x1 + temp65*v_x1x2) - temp14*(temp112*v_x2 + temp74*v_x2x2) - temp14*(temp113*v_x3 + temp76*v_x2x3)) + temp35*(temp115*temp31 - temp116*temp31 - temp117*temp31 + temp14*(temp13*v_x3 + temp8*v_x3x3) - temp14*(temp15*v_x1x3 + temp19*v_x1) - temp14*(temp20*v_x2x3 + temp23*v_x2)) + temp62*(temp118*temp58 - temp119*temp58 - temp120*temp58 + temp14*(temp36*v_x2x2 + temp41*v_x2) - temp14*(temp44*v_x1x2 + temp48*v_x1) - temp14*(temp49*v_x2x3 + temp51*v_x3)) + temp88*(temp121*temp84 - temp122*temp84 - temp123*temp84 + temp14*(temp65*v_x1x1 + temp73*v_x1) - temp14*(temp74*v_x1x2 + temp75*v_x2) - temp14*(temp76*v_x1x3 + temp77*v_x3)) - temp92*(temp115*temp58 - temp116*temp58 - temp117*temp58 - temp14*(temp15*v_x1x2 + temp90*v_x1) - temp14*(temp20*v_x2x2 + temp91*v_x2) + temp14*(temp8*v_x2x3 + temp89*v_x3)) - temp96*(temp118*temp31 - temp119*temp31 - temp120*temp31 + temp14*(temp36*v_x2x3 + temp93*v_x2) - temp14*(temp44*v_x1x3 + temp94*v_x1) - temp14*(temp49*v_x3x3 + temp95*v_x3)))*(-temp100*(-temp14*(temp15*u_x1x1 + temp98*u_x1) - temp14*(temp20*u_x1x2 + temp99*u_x2) + temp14*(temp8*u_x1x3 + temp97*u_x3) + temp32*temp84 - temp33*temp84 - temp34*temp84) - temp104*(temp14*(temp101*u_x2 + temp36*u_x1x2) - temp14*(temp102*u_x1 + temp44*u_x1x1) - temp14*(temp103*u_x3 + temp49*u_x1x3) + temp59*temp84 - temp60*temp84 - temp61*temp84) - temp110*(temp14*(temp105*u_x1 + temp65*u_x1x3) - temp14*(temp106*u_x2 + temp74*u_x2x3) - temp14*(temp109*u_x3 + temp76*u_x3x3) + temp31*temp85 - temp31*temp86 - temp31*temp87) - temp114*(temp14*(temp111*u_x1 + temp65*u_x1x2) - temp14*(temp112*u_x2 + temp74*u_x2x2) - temp14*(temp113*u_x3 + temp76*u_x2x3) + temp58*temp85 - temp58*temp86 - temp58*temp87) + temp35*(temp14*(temp13*u_x3 + temp8*u_x3x3) - temp14*(temp15*u_x1x3 + temp19*u_x1) - temp14*(temp20*u_x2x3 + temp23*u_x2) + temp31*temp32 - temp31*temp33 - temp31*temp34) + temp62*(temp14*(temp36*u_x2x2 + temp41*u_x2) - temp14*(temp44*u_x1x2 + temp48*u_x1) - temp14*(temp49*u_x2x3 + temp51*u_x3) + temp58*temp59 - temp58*temp60 - temp58*temp61) + temp88*(temp14*(temp65*u_x1x1 + temp73*u_x1) - temp14*(temp74*u_x1x2 + temp75*u_x2) - temp14*(temp76*u_x1x3 + temp77*u_x3) + temp84*temp85 - temp84*temp86 - temp84*temp87) - temp92*(-temp14*(temp15*u_x1x2 + temp90*u_x1) - temp14*(temp20*u_x2x2 + temp91*u_x2) + temp14*(temp8*u_x2x3 + temp89*u_x3) + temp32*temp58 - temp33*temp58 - temp34*temp58) - temp96*(temp14*(temp36*u_x2x3 + temp93*u_x2) - temp14*(temp44*u_x1x3 + temp94*u_x1) - temp14*(temp49*u_x3x3 + temp95*u_x3) + temp31*temp59 - temp31*temp60 - temp31*temp61))
 
-                                                                l_mat_u_v_lkv1k31k[i_basis_1,i_basis_2,i_basis_3,2 - i_basis_1 + j_basis_1,2 - i_basis_2 + j_basis_2,2 - i_basis_3 + j_basis_3] += contribution_v_u_lkv1k31k
+                                                                l_mat_u_v_lkv1k31k[i_basis_1,i_basis_2,i_basis_3,3 - i_basis_1 + j_basis_1,3 - i_basis_2 + j_basis_2,3 - i_basis_3 + j_basis_3] += contribution_v_u_lkv1k31k
 
                             g_mat_u_v_lkv1k31k[pad1 + span_v_1 - test_v_p1:1 + pad1 + span_v_1,pad2 + span_v_2 - test_v_p2:1 + pad2 + span_v_2,pad3 + span_v_3 - test_v_p3:1 + pad3 + span_v_3,:,:,:] += l_mat_u_v_lkv1k31k[:,:,:,:,:,:]
 
     #$ omp end parallel
-    return
 
 @types("float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "float64[:,:]", "float64[:,:]", "float64[:,:]", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "float64[:,:,:]", "float64[:,:,:]", "float64[:,:,:]", "float64[:,:,:,:,:,:]", "int64[:,:]", "int64[:,:,:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64")
 def assemble_matrix_3(global_test_basis_v_1, global_test_basis_v_2, global_test_basis_v_3, global_trial_basis_u_1, global_trial_basis_u_2, global_trial_basis_u_3, global_test_basis_mapping_v_1, global_test_basis_mapping_v_2, global_test_basis_mapping_v_3, global_span_v_1, global_span_v_2, global_span_v_3, global_span_mapping_v_1, global_span_mapping_v_2, global_span_mapping_v_3, global_x1, global_x2, global_x3, test_v_p1, test_v_p2, test_v_p3, trial_u_p1, trial_u_p2, trial_u_p3, test_mapping_v_p1, test_mapping_v_p2, test_mapping_v_p3, n_element_1, n_element_2, n_element_3, k1, k2, k3, pad1, pad2, pad3, global_arr_coeffs_x, global_arr_coeffs_y, global_arr_coeffs_z, g_mat_u_v_lkv1k31k, coords_from_rank, rank_from_coords, global_thread_starts_1, global_thread_starts_2, global_thread_starts_3, global_thread_ends_1, global_thread_ends_2, global_thread_ends_3, num_threads):
@@ -365,55 +330,25 @@ def assemble_matrix_3(global_test_basis_v_1, global_test_basis_v_2, global_test_
     global_thread_size_1 = 1 + global_thread_ends_1[thread_coords_1] - global_thread_starts_1[thread_coords_1]
     global_thread_size_2 = 1 + global_thread_ends_2[thread_coords_2] - global_thread_starts_2[thread_coords_2]
     global_thread_size_3 = 1 + global_thread_ends_3[thread_coords_3] - global_thread_starts_3[thread_coords_3]
-    local_thread_starts_1 = array((0, int((1/2)*global_thread_size_1)))
-    local_thread_starts_2 = array((0, int((1/2)*global_thread_size_2)))
-    local_thread_starts_3 = array((0, int((1/2)*global_thread_size_3)))
-    local_thread_ends_1 = array((int((1/2)*global_thread_size_1), global_thread_size_1))
-    local_thread_ends_2 = array((int((1/2)*global_thread_size_2), global_thread_size_2))
-    local_thread_ends_3 = array((int((1/2)*global_thread_size_3), global_thread_size_3))
-    local_test_basis_v_1 = zeros((global_thread_size_1, 4, 3, 4), dtype='float64')
-    local_test_basis_v_1[:,:,:,:] = global_test_basis_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:3,:]
-    local_test_basis_v_2 = zeros((global_thread_size_2, 4, 3, 4), dtype='float64')
-    local_test_basis_v_2[:,:,:,:] = global_test_basis_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2],:,:3,:]
-    local_test_basis_v_3 = zeros((global_thread_size_3, 4, 3, 4), dtype='float64')
-    local_test_basis_v_3[:,:,:,:] = global_test_basis_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3],:,:3,:]
-    local_trial_basis_u_1 = zeros((global_thread_size_1, 4, 3, 4), dtype='float64')
-    local_trial_basis_u_1[:,:,:,:] = global_trial_basis_u_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:3,:]
-    local_trial_basis_u_2 = zeros((global_thread_size_2, 4, 3, 4), dtype='float64')
-    local_trial_basis_u_2[:,:,:,:] = global_trial_basis_u_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2],:,:3,:]
-    local_trial_basis_u_3 = zeros((global_thread_size_3, 4, 3, 4), dtype='float64')
-    local_trial_basis_u_3[:,:,:,:] = global_trial_basis_u_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3],:,:3,:]
-    local_span_v_1 = zeros((global_thread_size_1,), dtype='int64')
-    local_span_v_1[:] = global_span_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1]]
-    local_span_v_2 = zeros((global_thread_size_2,), dtype='int64')
-    local_span_v_2[:] = global_span_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2]]
-    local_span_v_3 = zeros((global_thread_size_3,), dtype='int64')
-    local_span_v_3[:] = global_span_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3]]
-    local_test_basis_mapping_v_1 = zeros((global_thread_size_1, 4, 3, 4), dtype='float64')
-    local_test_basis_mapping_v_1[:,:,:,:] = global_test_basis_mapping_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:3,:]
-    local_test_basis_mapping_v_2 = zeros((global_thread_size_2, 4, 3, 4), dtype='float64')
-    local_test_basis_mapping_v_2[:,:,:,:] = global_test_basis_mapping_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2],:,:3,:]
-    local_test_basis_mapping_v_3 = zeros((global_thread_size_3, 4, 3, 4), dtype='float64')
-    local_test_basis_mapping_v_3[:,:,:,:] = global_test_basis_mapping_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3],:,:3,:]
-    local_span_mapping_v_1 = zeros((global_thread_size_1,), dtype='int64')
-    local_span_mapping_v_1[:] = global_span_mapping_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1]]
-    local_span_mapping_v_2 = zeros((global_thread_size_2,), dtype='int64')
-    local_span_mapping_v_2[:] = global_span_mapping_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2]]
-    local_span_mapping_v_3 = zeros((global_thread_size_3,), dtype='int64')
-    local_span_mapping_v_3[:] = global_span_mapping_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3]]
+    local_thread_starts_1 = array((global_thread_starts_1[thread_coords_1], global_thread_starts_1[thread_coords_1]+int((1/2)*global_thread_size_1)))
+    local_thread_starts_2 = array((global_thread_starts_2[thread_coords_2], global_thread_starts_2[thread_coords_2]+int((1/2)*global_thread_size_2)))
+    local_thread_starts_3 = array((global_thread_starts_3[thread_coords_3], global_thread_starts_3[thread_coords_3]+int((1/2)*global_thread_size_3)))
+    local_thread_ends_1 = array((global_thread_starts_1[thread_coords_1]+int((1/2)*global_thread_size_1), global_thread_ends_1[thread_coords_1]))
+    local_thread_ends_2 = array((global_thread_starts_2[thread_coords_2]+int((1/2)*global_thread_size_2), global_thread_ends_2[thread_coords_2]))
+    local_thread_ends_3 = array((global_thread_starts_3[thread_coords_3]+int((1/2)*global_thread_size_3), global_thread_ends_3[thread_coords_3]))
     for local_i_element_1 in range(0, 2, 1):
         for local_i_element_2 in range(0, 2, 1):
             for local_i_element_3 in range(0, 2, 1):
                 #$omp barrier
                 for i_element_1 in range(local_thread_starts_1[local_i_element_1], local_thread_ends_1[local_i_element_1], 1):
-                    span_v_1 = local_span_v_1[i_element_1]
-                    span_mapping_v_1 = local_span_mapping_v_1[i_element_1]
+                    span_v_1 = global_span_v_1[i_element_1]
+                    span_mapping_v_1 = global_span_mapping_v_1[i_element_1]
                     for i_element_2 in range(local_thread_starts_2[local_i_element_2], local_thread_ends_2[local_i_element_2], 1):
-                        span_v_2 = local_span_v_2[i_element_2]
-                        span_mapping_v_2 = local_span_mapping_v_2[i_element_2]
+                        span_v_2 = global_span_v_2[i_element_2]
+                        span_mapping_v_2 = global_span_mapping_v_2[i_element_2]
                         for i_element_3 in range(local_thread_starts_3[local_i_element_3], local_thread_ends_3[local_i_element_3], 1):
-                            span_v_3 = local_span_v_3[i_element_3]
-                            span_mapping_v_3 = local_span_mapping_v_3[i_element_3]
+                            span_v_3 = global_span_v_3[i_element_3]
+                            span_mapping_v_3 = global_span_mapping_v_3[i_element_3]
                             arr_coeffs_x[:,:,:] = global_arr_coeffs_x[3 + span_mapping_v_1 - test_mapping_v_p1:4 + span_mapping_v_1,3 + span_mapping_v_2 - test_mapping_v_p2:4 + span_mapping_v_2,3 + span_mapping_v_3 - test_mapping_v_p3:4 + span_mapping_v_3]
                             arr_coeffs_y[:,:,:] = global_arr_coeffs_y[3 + span_mapping_v_1 - test_mapping_v_p1:4 + span_mapping_v_1,3 + span_mapping_v_2 - test_mapping_v_p2:4 + span_mapping_v_2,3 + span_mapping_v_3 - test_mapping_v_p3:4 + span_mapping_v_3]
                             arr_coeffs_z[:,:,:] = global_arr_coeffs_z[3 + span_mapping_v_1 - test_mapping_v_p1:4 + span_mapping_v_1,3 + span_mapping_v_2 - test_mapping_v_p2:4 + span_mapping_v_2,3 + span_mapping_v_3 - test_mapping_v_p3:4 + span_mapping_v_3]
@@ -451,17 +386,17 @@ def assemble_matrix_3(global_test_basis_v_1, global_test_basis_v_2, global_test_
                                         z_x1x2  = 0.
                                         z_x1x1  = 0.
                                         for i_basis_1 in range(0, 4, 1):
-                                            mapping_v_1 = local_test_basis_mapping_v_1[i_element_1,i_basis_1,0,i_quad_1]
-                                            mapping_v_1_x1 = local_test_basis_mapping_v_1[i_element_1,i_basis_1,1,i_quad_1]
-                                            mapping_v_1_x1x1 = local_test_basis_mapping_v_1[i_element_1,i_basis_1,2,i_quad_1]
+                                            mapping_v_1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,0,i_quad_1]
+                                            mapping_v_1_x1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,1,i_quad_1]
+                                            mapping_v_1_x1x1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,2,i_quad_1]
                                             for i_basis_2 in range(0, 4, 1):
-                                                mapping_v_2 = local_test_basis_mapping_v_2[i_element_2,i_basis_2,0,i_quad_2]
-                                                mapping_v_2_x2 = local_test_basis_mapping_v_2[i_element_2,i_basis_2,1,i_quad_2]
-                                                mapping_v_2_x2x2 = local_test_basis_mapping_v_2[i_element_2,i_basis_2,2,i_quad_2]
+                                                mapping_v_2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                mapping_v_2_x2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,1,i_quad_2]
+                                                mapping_v_2_x2x2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,2,i_quad_2]
                                                 for i_basis_3 in range(0, 4, 1):
-                                                    mapping_v_3 = local_test_basis_mapping_v_3[i_element_3,i_basis_3,0,i_quad_3]
-                                                    mapping_v_3_x3 = local_test_basis_mapping_v_3[i_element_3,i_basis_3,1,i_quad_3]
-                                                    mapping_v_3_x3x3 = local_test_basis_mapping_v_3[i_element_3,i_basis_3,2,i_quad_3]
+                                                    mapping_v_3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                    mapping_v_3_x3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,1,i_quad_3]
+                                                    mapping_v_3_x3x3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,2,i_quad_3]
                                                     coeff_x = arr_coeffs_x[i_basis_1,i_basis_2,i_basis_3]
                                                     coeff_y = arr_coeffs_y[i_basis_1,i_basis_2,i_basis_3]
                                                     coeff_z = arr_coeffs_z[i_basis_1,i_basis_2,i_basis_3]
@@ -508,29 +443,29 @@ def assemble_matrix_3(global_test_basis_v_1, global_test_basis_v_2, global_test_
 
                                         for i_basis_1 in range(0, 4, 1):
 
-                                            v_1 = local_test_basis_v_1[i_element_1,i_basis_1,0,i_quad_1]
-                                            v_1_x1 = local_test_basis_v_1[i_element_1,i_basis_1,1,i_quad_1]
-                                            v_1_x1x1 = local_test_basis_v_1[i_element_1,i_basis_1,2,i_quad_1]
+                                            v_1 = global_test_basis_v_1[i_element_1,i_basis_1,0,i_quad_1]
+                                            v_1_x1 = global_test_basis_v_1[i_element_1,i_basis_1,1,i_quad_1]
+                                            v_1_x1x1 = global_test_basis_v_1[i_element_1,i_basis_1,2,i_quad_1]
                                             for i_basis_2 in range(0, 4, 1):
-                                                v_2 = local_test_basis_v_2[i_element_2,i_basis_2,0,i_quad_2]
-                                                v_2_x2 = local_test_basis_v_2[i_element_2,i_basis_2,1,i_quad_2]
-                                                v_2_x2x2 = local_test_basis_v_2[i_element_2,i_basis_2,2,i_quad_2]
+                                                v_2 = global_test_basis_v_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                v_2_x2 = global_test_basis_v_2[i_element_2,i_basis_2,1,i_quad_2]
+                                                v_2_x2x2 = global_test_basis_v_2[i_element_2,i_basis_2,2,i_quad_2]
                                                 for i_basis_3 in range(0, 4, 1):
-                                                    v_3 = local_test_basis_v_3[i_element_3,i_basis_3,0,i_quad_3]
-                                                    v_3_x3 = local_test_basis_v_3[i_element_3,i_basis_3,1,i_quad_3]
-                                                    v_3_x3x3 = local_test_basis_v_3[i_element_3,i_basis_3,2,i_quad_3]
+                                                    v_3 = global_test_basis_v_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                    v_3_x3 = global_test_basis_v_3[i_element_3,i_basis_3,1,i_quad_3]
+                                                    v_3_x3x3 = global_test_basis_v_3[i_element_3,i_basis_3,2,i_quad_3]
                                                     for j_basis_1 in range(0, 4, 1):
-                                                        u_1 = local_trial_basis_u_1[i_element_1,j_basis_1,0,i_quad_1]
-                                                        u_1_x1 = local_trial_basis_u_1[i_element_1,j_basis_1,1,i_quad_1]
-                                                        u_1_x1x1 = local_trial_basis_u_1[i_element_1,j_basis_1,2,i_quad_1]
+                                                        u_1 = global_trial_basis_u_1[i_element_1,j_basis_1,0,i_quad_1]
+                                                        u_1_x1 = global_trial_basis_u_1[i_element_1,j_basis_1,1,i_quad_1]
+                                                        u_1_x1x1 = global_trial_basis_u_1[i_element_1,j_basis_1,2,i_quad_1]
                                                         for j_basis_2 in range(0, 4, 1):
-                                                            u_2 = local_trial_basis_u_2[i_element_2,j_basis_2,0,i_quad_2]
-                                                            u_2_x2 = local_trial_basis_u_2[i_element_2,j_basis_2,1,i_quad_2]
-                                                            u_2_x2x2 = local_trial_basis_u_2[i_element_2,j_basis_2,2,i_quad_2]
+                                                            u_2 = global_trial_basis_u_2[i_element_2,j_basis_2,0,i_quad_2]
+                                                            u_2_x2 = global_trial_basis_u_2[i_element_2,j_basis_2,1,i_quad_2]
+                                                            u_2_x2x2 = global_trial_basis_u_2[i_element_2,j_basis_2,2,i_quad_2]
                                                             for j_basis_3 in range(0, 4, 1):
-                                                                u_3 = local_trial_basis_u_3[i_element_3,j_basis_3,0,i_quad_3]
-                                                                u_3_x3 = local_trial_basis_u_3[i_element_3,j_basis_3,1,i_quad_3]
-                                                                u_3_x3x3 = local_trial_basis_u_3[i_element_3,j_basis_3,2,i_quad_3]
+                                                                u_3 = global_trial_basis_u_3[i_element_3,j_basis_3,0,i_quad_3]
+                                                                u_3_x3 = global_trial_basis_u_3[i_element_3,j_basis_3,1,i_quad_3]
+                                                                u_3_x3x3 = global_trial_basis_u_3[i_element_3,j_basis_3,2,i_quad_3]
 
                                                                 v = v_1*v_2*v_3
                                                                 v_x3 = v_1*v_2*v_3_x3
@@ -684,7 +619,7 @@ def assemble_matrix_3(global_test_basis_v_1, global_test_basis_v_2, global_test_
 
     #$ omp end parallel
     return
-    
+
 @types("float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "float64[:,:]", "float64[:,:]", "float64[:,:]", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "int64", "float64[:,:,:]", "float64[:,:,:]", "float64[:,:,:]", "float64[:,:,:,:,:,:]", "int64[:,:]", "int64[:,:,:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64[:]", "int64")
 def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_basis_v_3, global_trial_basis_u_1, global_trial_basis_u_2, global_trial_basis_u_3, global_test_basis_mapping_v_1, global_test_basis_mapping_v_2, global_test_basis_mapping_v_3, global_span_v_1, global_span_v_2, global_span_v_3, global_span_mapping_v_1, global_span_mapping_v_2, global_span_mapping_v_3, global_x1, global_x2, global_x3, test_v_p1, test_v_p2, test_v_p3, trial_u_p1, trial_u_p2, trial_u_p3, test_mapping_v_p1, test_mapping_v_p2, test_mapping_v_p3, n_element_1, n_element_2, n_element_3, k1, k2, k3, pad1, pad2, pad3, global_arr_coeffs_x, global_arr_coeffs_y, global_arr_coeffs_z, g_mat_u_v_lkv1k31k, coords_from_rank, rank_from_coords, global_thread_starts_1, global_thread_starts_2, global_thread_starts_3, global_thread_ends_1, global_thread_ends_2, global_thread_ends_3, num_threads):
 
@@ -706,55 +641,25 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
     global_thread_size_1 = 1 + global_thread_ends_1[thread_coords_1] - global_thread_starts_1[thread_coords_1]
     global_thread_size_2 = 1 + global_thread_ends_2[thread_coords_2] - global_thread_starts_2[thread_coords_2]
     global_thread_size_3 = 1 + global_thread_ends_3[thread_coords_3] - global_thread_starts_3[thread_coords_3]
-    local_thread_starts_1 = array((0, int((1/2)*global_thread_size_1)))
-    local_thread_starts_2 = array((0, int((1/2)*global_thread_size_2)))
-    local_thread_starts_3 = array((0, int((1/2)*global_thread_size_3)))
-    local_thread_ends_1 = array((int((1/2)*global_thread_size_1), global_thread_size_1))
-    local_thread_ends_2 = array((int((1/2)*global_thread_size_2), global_thread_size_2))
-    local_thread_ends_3 = array((int((1/2)*global_thread_size_3), global_thread_size_3))
-    local_test_basis_v_1 = zeros((global_thread_size_1, 5, 3, 5), dtype='float64')
-    local_test_basis_v_1[:,:,:,:] = global_test_basis_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:3,:]
-    local_test_basis_v_2 = zeros((global_thread_size_2, 5, 3, 5), dtype='float64')
-    local_test_basis_v_2[:,:,:,:] = global_test_basis_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2],:,:3,:]
-    local_test_basis_v_3 = zeros((global_thread_size_3, 5, 3, 5), dtype='float64')
-    local_test_basis_v_3[:,:,:,:] = global_test_basis_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3],:,:3,:]
-    local_trial_basis_u_1 = zeros((global_thread_size_1, 5, 3, 5), dtype='float64')
-    local_trial_basis_u_1[:,:,:,:] = global_trial_basis_u_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:3,:]
-    local_trial_basis_u_2 = zeros((global_thread_size_2, 5, 3, 5), dtype='float64')
-    local_trial_basis_u_2[:,:,:,:] = global_trial_basis_u_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2],:,:3,:]
-    local_trial_basis_u_3 = zeros((global_thread_size_3, 5, 3, 5), dtype='float64')
-    local_trial_basis_u_3[:,:,:,:] = global_trial_basis_u_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3],:,:3,:]
-    local_span_v_1 = zeros((global_thread_size_1,), dtype='int64')
-    local_span_v_1[:] = global_span_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1]]
-    local_span_v_2 = zeros((global_thread_size_2,), dtype='int64')
-    local_span_v_2[:] = global_span_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2]]
-    local_span_v_3 = zeros((global_thread_size_3,), dtype='int64')
-    local_span_v_3[:] = global_span_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3]]
-    local_test_basis_mapping_v_1 = zeros((global_thread_size_1, 5, 3, 5), dtype='float64')
-    local_test_basis_mapping_v_1[:,:,:,:] = global_test_basis_mapping_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:3,:]
-    local_test_basis_mapping_v_2 = zeros((global_thread_size_2, 5, 3, 5), dtype='float64')
-    local_test_basis_mapping_v_2[:,:,:,:] = global_test_basis_mapping_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2],:,:3,:]
-    local_test_basis_mapping_v_3 = zeros((global_thread_size_3, 5, 3, 5), dtype='float64')
-    local_test_basis_mapping_v_3[:,:,:,:] = global_test_basis_mapping_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3],:,:3,:]
-    local_span_mapping_v_1 = zeros((global_thread_size_1,), dtype='int64')
-    local_span_mapping_v_1[:] = global_span_mapping_v_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1]]
-    local_span_mapping_v_2 = zeros((global_thread_size_2,), dtype='int64')
-    local_span_mapping_v_2[:] = global_span_mapping_v_2[global_thread_starts_2[thread_coords_2]:1 + global_thread_ends_2[thread_coords_2]]
-    local_span_mapping_v_3 = zeros((global_thread_size_3,), dtype='int64')
-    local_span_mapping_v_3[:] = global_span_mapping_v_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3]]
+    local_thread_starts_1 = array((global_thread_starts_1[thread_coords_1], global_thread_starts_1[thread_coords_1]+int((1/2)*global_thread_size_1)))
+    local_thread_starts_2 = array((global_thread_starts_2[thread_coords_2], global_thread_starts_2[thread_coords_2]+int((1/2)*global_thread_size_2)))
+    local_thread_starts_3 = array((global_thread_starts_3[thread_coords_3], global_thread_starts_3[thread_coords_3]+int((1/2)*global_thread_size_3)))
+    local_thread_ends_1 = array((global_thread_starts_1[thread_coords_1]+int((1/2)*global_thread_size_1), global_thread_ends_1[thread_coords_1]))
+    local_thread_ends_2 = array((global_thread_starts_2[thread_coords_2]+int((1/2)*global_thread_size_2), global_thread_ends_2[thread_coords_2]))
+    local_thread_ends_3 = array((global_thread_starts_3[thread_coords_3]+int((1/2)*global_thread_size_3), global_thread_ends_3[thread_coords_3]))
     for local_i_element_1 in range(0, 2, 1):
         for local_i_element_2 in range(0, 2, 1):
             for local_i_element_3 in range(0, 2, 1):
                 #$omp barrier
                 for i_element_1 in range(local_thread_starts_1[local_i_element_1], local_thread_ends_1[local_i_element_1], 1):
-                    span_v_1 = local_span_v_1[i_element_1]
-                    span_mapping_v_1 = local_span_mapping_v_1[i_element_1]
+                    span_v_1 = global_span_v_1[i_element_1]
+                    span_mapping_v_1 = global_span_mapping_v_1[i_element_1]
                     for i_element_2 in range(local_thread_starts_2[local_i_element_2], local_thread_ends_2[local_i_element_2], 1):
-                        span_v_2 = local_span_v_2[i_element_2]
-                        span_mapping_v_2 = local_span_mapping_v_2[i_element_2]
+                        span_v_2 = global_span_v_2[i_element_2]
+                        span_mapping_v_2 = global_span_mapping_v_2[i_element_2]
                         for i_element_3 in range(local_thread_starts_3[local_i_element_3], local_thread_ends_3[local_i_element_3], 1):
-                            span_v_3 = local_span_v_3[i_element_3]
-                            span_mapping_v_3 = local_span_mapping_v_3[i_element_3]
+                            span_v_3 = global_span_v_3[i_element_3]
+                            span_mapping_v_3 = global_span_mapping_v_3[i_element_3]
                             arr_coeffs_x[:,:,:] = global_arr_coeffs_x[4 + span_mapping_v_1 - test_mapping_v_p1:5 + span_mapping_v_1,4 + span_mapping_v_2 - test_mapping_v_p2:5 + span_mapping_v_2,4 + span_mapping_v_3 - test_mapping_v_p3:5 + span_mapping_v_3]
                             arr_coeffs_y[:,:,:] = global_arr_coeffs_y[4 + span_mapping_v_1 - test_mapping_v_p1:5 + span_mapping_v_1,4 + span_mapping_v_2 - test_mapping_v_p2:5 + span_mapping_v_2,4 + span_mapping_v_3 - test_mapping_v_p3:5 + span_mapping_v_3]
                             arr_coeffs_z[:,:,:] = global_arr_coeffs_z[4 + span_mapping_v_1 - test_mapping_v_p1:5 + span_mapping_v_1,4 + span_mapping_v_2 - test_mapping_v_p2:5 + span_mapping_v_2,4 + span_mapping_v_3 - test_mapping_v_p3:5 + span_mapping_v_3]
@@ -792,17 +697,17 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
                                         z_x1x2  = 0.
                                         z_x1x1  = 0.
                                         for i_basis_1 in range(0, 5, 1):
-                                            mapping_v_1 = local_test_basis_mapping_v_1[i_element_1,i_basis_1,0,i_quad_1]
-                                            mapping_v_1_x1 = local_test_basis_mapping_v_1[i_element_1,i_basis_1,1,i_quad_1]
-                                            mapping_v_1_x1x1 = local_test_basis_mapping_v_1[i_element_1,i_basis_1,2,i_quad_1]
+                                            mapping_v_1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,0,i_quad_1]
+                                            mapping_v_1_x1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,1,i_quad_1]
+                                            mapping_v_1_x1x1 = global_test_basis_mapping_v_1[i_element_1,i_basis_1,2,i_quad_1]
                                             for i_basis_2 in range(0, 5, 1):
-                                                mapping_v_2 = local_test_basis_mapping_v_2[i_element_2,i_basis_2,0,i_quad_2]
-                                                mapping_v_2_x2 = local_test_basis_mapping_v_2[i_element_2,i_basis_2,1,i_quad_2]
-                                                mapping_v_2_x2x2 = local_test_basis_mapping_v_2[i_element_2,i_basis_2,2,i_quad_2]
+                                                mapping_v_2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                mapping_v_2_x2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,1,i_quad_2]
+                                                mapping_v_2_x2x2 = global_test_basis_mapping_v_2[i_element_2,i_basis_2,2,i_quad_2]
                                                 for i_basis_3 in range(0, 5, 1):
-                                                    mapping_v_3 = local_test_basis_mapping_v_3[i_element_3,i_basis_3,0,i_quad_3]
-                                                    mapping_v_3_x3 = local_test_basis_mapping_v_3[i_element_3,i_basis_3,1,i_quad_3]
-                                                    mapping_v_3_x3x3 = local_test_basis_mapping_v_3[i_element_3,i_basis_3,2,i_quad_3]
+                                                    mapping_v_3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                    mapping_v_3_x3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,1,i_quad_3]
+                                                    mapping_v_3_x3x3 = global_test_basis_mapping_v_3[i_element_3,i_basis_3,2,i_quad_3]
                                                     coeff_x = arr_coeffs_x[i_basis_1,i_basis_2,i_basis_3]
                                                     coeff_y = arr_coeffs_y[i_basis_1,i_basis_2,i_basis_3]
                                                     coeff_z = arr_coeffs_z[i_basis_1,i_basis_2,i_basis_3]
@@ -848,30 +753,29 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
                                                     z_x1x1 += mapping_v_x1x1*coeff_z
 
                                         for i_basis_1 in range(0, 5, 1):
-
-                                            v_1 = local_test_basis_v_1[i_element_1,i_basis_1,0,i_quad_1]
-                                            v_1_x1 = local_test_basis_v_1[i_element_1,i_basis_1,1,i_quad_1]
-                                            v_1_x1x1 = local_test_basis_v_1[i_element_1,i_basis_1,2,i_quad_1]
+                                            v_1 = global_test_basis_v_1[i_element_1,i_basis_1,0,i_quad_1]
+                                            v_1_x1 = global_test_basis_v_1[i_element_1,i_basis_1,1,i_quad_1]
+                                            v_1_x1x1 = global_test_basis_v_1[i_element_1,i_basis_1,2,i_quad_1]
                                             for i_basis_2 in range(0, 5, 1):
-                                                v_2 = local_test_basis_v_2[i_element_2,i_basis_2,0,i_quad_2]
-                                                v_2_x2 = local_test_basis_v_2[i_element_2,i_basis_2,1,i_quad_2]
-                                                v_2_x2x2 = local_test_basis_v_2[i_element_2,i_basis_2,2,i_quad_2]
+                                                v_2 = global_test_basis_v_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                v_2_x2 = global_test_basis_v_2[i_element_2,i_basis_2,1,i_quad_2]
+                                                v_2_x2x2 = global_test_basis_v_2[i_element_2,i_basis_2,2,i_quad_2]
                                                 for i_basis_3 in range(0, 5, 1):
-                                                    v_3 = local_test_basis_v_3[i_element_3,i_basis_3,0,i_quad_3]
-                                                    v_3_x3 = local_test_basis_v_3[i_element_3,i_basis_3,1,i_quad_3]
-                                                    v_3_x3x3 = local_test_basis_v_3[i_element_3,i_basis_3,2,i_quad_3]
+                                                    v_3 = global_test_basis_v_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                    v_3_x3 = global_test_basis_v_3[i_element_3,i_basis_3,1,i_quad_3]
+                                                    v_3_x3x3 = global_test_basis_v_3[i_element_3,i_basis_3,2,i_quad_3]
                                                     for j_basis_1 in range(0, 5, 1):
-                                                        u_1 = local_trial_basis_u_1[i_element_1,j_basis_1,0,i_quad_1]
-                                                        u_1_x1 = local_trial_basis_u_1[i_element_1,j_basis_1,1,i_quad_1]
-                                                        u_1_x1x1 = local_trial_basis_u_1[i_element_1,j_basis_1,2,i_quad_1]
+                                                        u_1 = global_trial_basis_u_1[i_element_1,j_basis_1,0,i_quad_1]
+                                                        u_1_x1 = global_trial_basis_u_1[i_element_1,j_basis_1,1,i_quad_1]
+                                                        u_1_x1x1 = global_trial_basis_u_1[i_element_1,j_basis_1,2,i_quad_1]
                                                         for j_basis_2 in range(0, 5, 1):
-                                                            u_2 = local_trial_basis_u_2[i_element_2,j_basis_2,0,i_quad_2]
-                                                            u_2_x2 = local_trial_basis_u_2[i_element_2,j_basis_2,1,i_quad_2]
-                                                            u_2_x2x2 = local_trial_basis_u_2[i_element_2,j_basis_2,2,i_quad_2]
+                                                            u_2 = global_trial_basis_u_2[i_element_2,j_basis_2,0,i_quad_2]
+                                                            u_2_x2 = global_trial_basis_u_2[i_element_2,j_basis_2,1,i_quad_2]
+                                                            u_2_x2x2 = global_trial_basis_u_2[i_element_2,j_basis_2,2,i_quad_2]
                                                             for j_basis_3 in range(0, 5, 1):
-                                                                u_3 = local_trial_basis_u_3[i_element_3,j_basis_3,0,i_quad_3]
-                                                                u_3_x3 = local_trial_basis_u_3[i_element_3,j_basis_3,1,i_quad_3]
-                                                                u_3_x3x3 = local_trial_basis_u_3[i_element_3,j_basis_3,2,i_quad_3]
+                                                                u_3 = global_trial_basis_u_3[i_element_3,j_basis_3,0,i_quad_3]
+                                                                u_3_x3 = global_trial_basis_u_3[i_element_3,j_basis_3,1,i_quad_3]
+                                                                u_3_x3x3 = global_trial_basis_u_3[i_element_3,j_basis_3,2,i_quad_3]
 
                                                                 v = v_1*v_2*v_3
                                                                 v_x3 = v_1*v_2*v_3_x3
@@ -1019,7 +923,7 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
                                                                 temp123 = temp76*v_x3
                                                                 contribution_v_u_lkv1k31k = sqrt(temp7)*(-temp100*(temp115*temp84 - temp116*temp84 - temp117*temp84 - temp14*(temp15*v_x1x1 + temp98*v_x1) - temp14*(temp20*v_x1x2 + temp99*v_x2) + temp14*(temp8*v_x1x3 + temp97*v_x3)) - temp104*(temp118*temp84 - temp119*temp84 - temp120*temp84 + temp14*(temp101*v_x2 + temp36*v_x1x2) - temp14*(temp102*v_x1 + temp44*v_x1x1) - temp14*(temp103*v_x3 + temp49*v_x1x3)) - temp110*(temp121*temp31 - temp122*temp31 - temp123*temp31 + temp14*(temp105*v_x1 + temp65*v_x1x3) - temp14*(temp106*v_x2 + temp74*v_x2x3) - temp14*(temp109*v_x3 + temp76*v_x3x3)) - temp114*(temp121*temp58 - temp122*temp58 - temp123*temp58 + temp14*(temp111*v_x1 + temp65*v_x1x2) - temp14*(temp112*v_x2 + temp74*v_x2x2) - temp14*(temp113*v_x3 + temp76*v_x2x3)) + temp35*(temp115*temp31 - temp116*temp31 - temp117*temp31 + temp14*(temp13*v_x3 + temp8*v_x3x3) - temp14*(temp15*v_x1x3 + temp19*v_x1) - temp14*(temp20*v_x2x3 + temp23*v_x2)) + temp62*(temp118*temp58 - temp119*temp58 - temp120*temp58 + temp14*(temp36*v_x2x2 + temp41*v_x2) - temp14*(temp44*v_x1x2 + temp48*v_x1) - temp14*(temp49*v_x2x3 + temp51*v_x3)) + temp88*(temp121*temp84 - temp122*temp84 - temp123*temp84 + temp14*(temp65*v_x1x1 + temp73*v_x1) - temp14*(temp74*v_x1x2 + temp75*v_x2) - temp14*(temp76*v_x1x3 + temp77*v_x3)) - temp92*(temp115*temp58 - temp116*temp58 - temp117*temp58 - temp14*(temp15*v_x1x2 + temp90*v_x1) - temp14*(temp20*v_x2x2 + temp91*v_x2) + temp14*(temp8*v_x2x3 + temp89*v_x3)) - temp96*(temp118*temp31 - temp119*temp31 - temp120*temp31 + temp14*(temp36*v_x2x3 + temp93*v_x2) - temp14*(temp44*v_x1x3 + temp94*v_x1) - temp14*(temp49*v_x3x3 + temp95*v_x3)))*(-temp100*(-temp14*(temp15*u_x1x1 + temp98*u_x1) - temp14*(temp20*u_x1x2 + temp99*u_x2) + temp14*(temp8*u_x1x3 + temp97*u_x3) + temp32*temp84 - temp33*temp84 - temp34*temp84) - temp104*(temp14*(temp101*u_x2 + temp36*u_x1x2) - temp14*(temp102*u_x1 + temp44*u_x1x1) - temp14*(temp103*u_x3 + temp49*u_x1x3) + temp59*temp84 - temp60*temp84 - temp61*temp84) - temp110*(temp14*(temp105*u_x1 + temp65*u_x1x3) - temp14*(temp106*u_x2 + temp74*u_x2x3) - temp14*(temp109*u_x3 + temp76*u_x3x3) + temp31*temp85 - temp31*temp86 - temp31*temp87) - temp114*(temp14*(temp111*u_x1 + temp65*u_x1x2) - temp14*(temp112*u_x2 + temp74*u_x2x2) - temp14*(temp113*u_x3 + temp76*u_x2x3) + temp58*temp85 - temp58*temp86 - temp58*temp87) + temp35*(temp14*(temp13*u_x3 + temp8*u_x3x3) - temp14*(temp15*u_x1x3 + temp19*u_x1) - temp14*(temp20*u_x2x3 + temp23*u_x2) + temp31*temp32 - temp31*temp33 - temp31*temp34) + temp62*(temp14*(temp36*u_x2x2 + temp41*u_x2) - temp14*(temp44*u_x1x2 + temp48*u_x1) - temp14*(temp49*u_x2x3 + temp51*u_x3) + temp58*temp59 - temp58*temp60 - temp58*temp61) + temp88*(temp14*(temp65*u_x1x1 + temp73*u_x1) - temp14*(temp74*u_x1x2 + temp75*u_x2) - temp14*(temp76*u_x1x3 + temp77*u_x3) + temp84*temp85 - temp84*temp86 - temp84*temp87) - temp92*(-temp14*(temp15*u_x1x2 + temp90*u_x1) - temp14*(temp20*u_x2x2 + temp91*u_x2) + temp14*(temp8*u_x2x3 + temp89*u_x3) + temp32*temp58 - temp33*temp58 - temp34*temp58) - temp96*(temp14*(temp36*u_x2x3 + temp93*u_x2) - temp14*(temp44*u_x1x3 + temp94*u_x1) - temp14*(temp49*u_x3x3 + temp95*u_x3) + temp31*temp59 - temp31*temp60 - temp31*temp61))
 
-                                                                l_mat_u_v_lkv1k31k[i_basis_1,i_basis_2,i_basis_3,4 - i_basis_1 + j_basis_1,4 - i_basis_2 + j_basis_2,4 - i_basis_3 + j_basis_3] += contribution_v_u_lkv1k31k
+                                                                l_mat_u_v_lkv1k31k[i_basis_1,i_basis_2,i_basis_3,3 - i_basis_1 + j_basis_1,3 - i_basis_2 + j_basis_2,3 - i_basis_3 + j_basis_3] += contribution_v_u_lkv1k31k
 
                             g_mat_u_v_lkv1k31k[pad1 + span_v_1 - test_v_p1:1 + pad1 + span_v_1,pad2 + span_v_2 - test_v_p2:1 + pad2 + span_v_2,pad3 + span_v_3 - test_v_p3:1 + pad3 + span_v_3,:,:,:] += l_mat_u_v_lkv1k31k[:,:,:,:,:,:]
 

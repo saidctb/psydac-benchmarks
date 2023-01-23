@@ -81,78 +81,65 @@ def assemble_matrix(global_test_basis_TE_0_1, global_test_basis_TE_0_2, global_t
                             span_TE_1_3 = global_span_TE_1_3[i_element_3]
                             span_TE_2_3 = global_span_TE_2_3[i_element_3]
 
-#                            for i_quad_1 in range(0, 5, 1):
-#                                for i_quad_2 in range(0, 5, 1):
-#                                    for i_quad_3 in range(0, 5, 1):
-                            for i_basis_1 in range(0, 4, 1):
-                                for i_basis_2 in range(0, 5, 1):
-                                    for i_basis_3 in range(0, 5, 1):
-                                        for j_basis_1 in range(0, 4, 1):
-                                            for j_basis_2 in range(0, 5, 1):
-                                                for j_basis_3 in range(0, 5, 1):
+                            for i_quad_1 in range(0, 5, 1):
+                                for i_quad_2 in range(0, 5, 1):
+                                    for i_quad_3 in range(0, 5, 1):
 
-                                                    contribution = 0.0
-                                                    for i_quad_1 in range(0, 5, 1):
-                                                        TE_0_1 = global_test_basis_TE_0_1[i_element_1,i_basis_1,0,i_quad_1]
+                                        for i_basis_1 in range(0, 4, 1):
+                                            TE_0_1 = global_test_basis_TE_0_1[i_element_1,i_basis_1,0,i_quad_1]
+                                            for i_basis_2 in range(0, 5, 1):
+                                                TE_0_2 = global_test_basis_TE_0_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                for i_basis_3 in range(0, 5, 1):
+                                                    TE_0_3 = global_test_basis_TE_0_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                    for j_basis_1 in range(0, 4, 1):
                                                         E_0_1 = global_trial_basis_E_0_1[i_element_1,j_basis_1,0,i_quad_1]
-                                                        for i_quad_2 in range(0, 5, 1):
-                                                            TE_0_2 = global_test_basis_TE_0_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                        for j_basis_2 in range(0, 5, 1):
                                                             E_0_2  = global_trial_basis_E_0_2[i_element_2,j_basis_2,0,i_quad_2]
-                                                            for i_quad_3 in range(0, 5, 1):
-                                                                TE_0_3 = global_test_basis_TE_0_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                            for j_basis_3 in range(0, 5, 1):
                                                                 E_0_3 = global_trial_basis_E_0_3[i_element_3,j_basis_3,0,i_quad_3]
                                                                 TE_0 = TE_0_1*TE_0_2*TE_0_3
                                                                 E_0 = E_0_1*E_0_2*E_0_3
-                                                                contribution += E_0*TE_0
+                                                                contribution = E_0*TE_0
 
-                                                    l_mat_00[i_basis_1,i_basis_2,i_basis_3,3 - i_basis_1 + j_basis_1,4 - i_basis_2 + j_basis_2,4 - i_basis_3 + j_basis_3] = contribution
+                                                                l_mat_00[i_basis_1,i_basis_2,i_basis_3,3 - i_basis_1 + j_basis_1,4 - i_basis_2 + j_basis_2,4 - i_basis_3 + j_basis_3] += contribution
 
-                            for i_basis_1 in range(0, 5, 1):
-                                for i_basis_2 in range(0, 4, 1):
-                                    for i_basis_3 in range(0, 5, 1):
-                                        for j_basis_1 in range(0, 5, 1):
-                                            for j_basis_2 in range(0, 4, 1):
-                                                for j_basis_3 in range(0, 5, 1):
-                                                    contribution = 0.0
-                                                    for i_quad_1 in range(0, 5, 1):
-                                                        TE_1_1 = global_test_basis_TE_1_1[i_element_1,i_basis_1,0,i_quad_1]
+                                        for i_basis_1 in range(0, 5, 1):
+                                            TE_1_1 = global_test_basis_TE_1_1[i_element_1,i_basis_1,0,i_quad_1]
+                                            for i_basis_2 in range(0, 4, 1):
+                                                TE_1_2 = global_test_basis_TE_1_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                for i_basis_3 in range(0, 5, 1):
+                                                    TE_1_3 = global_test_basis_TE_1_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                    for j_basis_1 in range(0, 5, 1):
                                                         E_1_1 = global_trial_basis_E_1_1[i_element_1,j_basis_1,0,i_quad_1]
-                                                        for i_quad_2 in range(0, 5, 1):
-                                                            TE_1_2 = global_test_basis_TE_1_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                        for j_basis_2 in range(0, 4, 1):
                                                             E_1_2 = global_trial_basis_E_1_2[i_element_2,j_basis_2,0,i_quad_2]
-                                                            for i_quad_3 in range(0, 5, 1):
-                                                                TE_1_3 = global_test_basis_TE_1_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                            for j_basis_3 in range(0, 5, 1):
                                                                 E_1_3 = global_trial_basis_E_1_3[i_element_3,j_basis_3,0,i_quad_3]
 
                                                                 TE_1 = TE_1_1*TE_1_2*TE_1_3
                                                                 E_1 = E_1_1*E_1_2*E_1_3
-                                                                contribution += E_1*TE_1
-  
-                                                    l_mat_11[i_basis_1,i_basis_2,i_basis_3,4 - i_basis_1 + j_basis_1,3 - i_basis_2 + j_basis_2,4 - i_basis_3 + j_basis_3] = contribution
+                                                                contribution = E_1*TE_1
+              
+                                                                l_mat_11[i_basis_1,i_basis_2,i_basis_3,4 - i_basis_1 + j_basis_1,3 - i_basis_2 + j_basis_2,4 - i_basis_3 + j_basis_3] += contribution
 
-                            for i_basis_1 in range(0, 5, 1):
-                                for i_basis_2 in range(0, 5, 1):
-                                    for i_basis_3 in range(0, 4, 1):
-                                        for j_basis_1 in range(0, 5, 1):
-                                            for j_basis_2 in range(0, 5, 1):
-                                                for j_basis_3 in range(0, 4, 1):
-
-                                                    contribution = 0.0
-                                                    for i_quad_1 in range(0, 5, 1):
-                                                        TE_2_1 = global_test_basis_TE_2_1[i_element_1,i_basis_1,0,i_quad_1]
+                                        for i_basis_1 in range(0, 5, 1):
+                                            TE_2_1 = global_test_basis_TE_2_1[i_element_1,i_basis_1,0,i_quad_1]
+                                            for i_basis_2 in range(0, 5, 1):
+                                                TE_2_2 = global_test_basis_TE_2_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                for i_basis_3 in range(0, 4, 1):
+                                                    TE_2_3 = global_test_basis_TE_2_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                    for j_basis_1 in range(0, 5, 1):
                                                         E_2_1 = global_trial_basis_E_2_1[i_element_1,j_basis_1,0,i_quad_1]
-                                                        for i_quad_2 in range(0, 5, 1):
-                                                            TE_2_2 = global_test_basis_TE_2_2[i_element_2,i_basis_2,0,i_quad_2]
+                                                        for j_basis_2 in range(0, 5, 1):
                                                             E_2_2 = global_trial_basis_E_2_2[i_element_2,j_basis_2,0,i_quad_2]
-                                                            for i_quad_3 in range(0, 5, 1):
-                                                                TE_2_3 = global_test_basis_TE_2_3[i_element_3,i_basis_3,0,i_quad_3]
+                                                            for j_basis_3 in range(0, 4, 1):
                                                                 E_2_3 = global_trial_basis_E_2_3[i_element_3,j_basis_3,0,i_quad_3]
                                                                 TE_2 = TE_2_1*TE_2_2*TE_2_3
                                                                 E_2 = E_2_1*E_2_2*E_2_3
-                                                                contribution += E_2*TE_2
+                                                                contribution = E_2*TE_2
+                                                                        
+                                                                l_mat_22[i_basis_1,i_basis_2,i_basis_3,4 - i_basis_1 + j_basis_1,4 - i_basis_2 + j_basis_2,3 - i_basis_3 + j_basis_3] += contribution
                                                             
-                                                    l_mat_22[i_basis_1,i_basis_2,i_basis_3,4 - i_basis_1 + j_basis_1,4 - i_basis_2 + j_basis_2,3 - i_basis_3 + j_basis_3] = contribution
-                                                
                                             
                             g_mat_00[pad1 + span_TE_0_1 - test_TE_0_p1:1 + pad1 + span_TE_0_1,pad2 + span_TE_0_2 - test_TE_0_p2:1 + pad2 + span_TE_0_2,pad3 + span_TE_0_3 - test_TE_0_p3:1 + pad3 + span_TE_0_3,:,:,:] += l_mat_00[:,:,:,:,:,:]
                             g_mat_11[pad1 + span_TE_1_1 - test_TE_1_p1:1 + pad1 + span_TE_1_1,pad2 + span_TE_1_2 - test_TE_1_p2:1 + pad2 + span_TE_1_2,pad3 + span_TE_1_3 - test_TE_1_p3:1 + pad3 + span_TE_1_3,:,:,:] += l_mat_11[:,:,:,:,:,:]

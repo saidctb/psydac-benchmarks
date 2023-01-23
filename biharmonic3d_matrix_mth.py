@@ -40,6 +40,7 @@ def assemble_matrix_2(global_test_basis_v_1, global_test_basis_v_2, global_test_
                         for i_element_3 in range(local_thread_starts_3[local_i_element_3], local_thread_ends_3[local_i_element_3], 1):
                             span_v_3 = global_span_v_3[i_element_3]
                             span_mapping_v_3 = global_span_mapping_v_3[i_element_3]
+                            l_mat_u_v_lkv1k31k[:,:,:,:,:,:] = 0.
                             arr_coeffs_x[:,:,:] = global_arr_coeffs_x[2 + span_mapping_v_1 - test_mapping_v_p1:3 + span_mapping_v_1,2 + span_mapping_v_2 - test_mapping_v_p2:3 + span_mapping_v_2,2 + span_mapping_v_3 - test_mapping_v_p3:3 + span_mapping_v_3]
                             arr_coeffs_y[:,:,:] = global_arr_coeffs_y[2 + span_mapping_v_1 - test_mapping_v_p1:3 + span_mapping_v_1,2 + span_mapping_v_2 - test_mapping_v_p2:3 + span_mapping_v_2,2 + span_mapping_v_3 - test_mapping_v_p3:3 + span_mapping_v_3]
                             arr_coeffs_z[:,:,:] = global_arr_coeffs_z[2 + span_mapping_v_1 - test_mapping_v_p1:3 + span_mapping_v_1,2 + span_mapping_v_2 - test_mapping_v_p2:3 + span_mapping_v_2,2 + span_mapping_v_3 - test_mapping_v_p3:3 + span_mapping_v_3]
@@ -349,6 +350,7 @@ def assemble_matrix_3(global_test_basis_v_1, global_test_basis_v_2, global_test_
                         for i_element_3 in range(local_thread_starts_3[local_i_element_3], local_thread_ends_3[local_i_element_3], 1):
                             span_v_3 = global_span_v_3[i_element_3]
                             span_mapping_v_3 = global_span_mapping_v_3[i_element_3]
+                            l_mat_u_v_lkv1k31k[:,:,:,:,:,:] = 0.
                             arr_coeffs_x[:,:,:] = global_arr_coeffs_x[3 + span_mapping_v_1 - test_mapping_v_p1:4 + span_mapping_v_1,3 + span_mapping_v_2 - test_mapping_v_p2:4 + span_mapping_v_2,3 + span_mapping_v_3 - test_mapping_v_p3:4 + span_mapping_v_3]
                             arr_coeffs_y[:,:,:] = global_arr_coeffs_y[3 + span_mapping_v_1 - test_mapping_v_p1:4 + span_mapping_v_1,3 + span_mapping_v_2 - test_mapping_v_p2:4 + span_mapping_v_2,3 + span_mapping_v_3 - test_mapping_v_p3:4 + span_mapping_v_3]
                             arr_coeffs_z[:,:,:] = global_arr_coeffs_z[3 + span_mapping_v_1 - test_mapping_v_p1:4 + span_mapping_v_1,3 + span_mapping_v_2 - test_mapping_v_p2:4 + span_mapping_v_2,3 + span_mapping_v_3 - test_mapping_v_p3:4 + span_mapping_v_3]
@@ -660,6 +662,7 @@ def assemble_matrix_4(global_test_basis_v_1, global_test_basis_v_2, global_test_
                         for i_element_3 in range(local_thread_starts_3[local_i_element_3], local_thread_ends_3[local_i_element_3], 1):
                             span_v_3 = global_span_v_3[i_element_3]
                             span_mapping_v_3 = global_span_mapping_v_3[i_element_3]
+                            l_mat_u_v_lkv1k31k[:,:,:,:,:,:] = 0.
                             arr_coeffs_x[:,:,:] = global_arr_coeffs_x[4 + span_mapping_v_1 - test_mapping_v_p1:5 + span_mapping_v_1,4 + span_mapping_v_2 - test_mapping_v_p2:5 + span_mapping_v_2,4 + span_mapping_v_3 - test_mapping_v_p3:5 + span_mapping_v_3]
                             arr_coeffs_y[:,:,:] = global_arr_coeffs_y[4 + span_mapping_v_1 - test_mapping_v_p1:5 + span_mapping_v_1,4 + span_mapping_v_2 - test_mapping_v_p2:5 + span_mapping_v_2,4 + span_mapping_v_3 - test_mapping_v_p3:5 + span_mapping_v_3]
                             arr_coeffs_z[:,:,:] = global_arr_coeffs_z[4 + span_mapping_v_1 - test_mapping_v_p1:5 + span_mapping_v_1,4 + span_mapping_v_2 - test_mapping_v_p2:5 + span_mapping_v_2,4 + span_mapping_v_3 - test_mapping_v_p3:5 + span_mapping_v_3]

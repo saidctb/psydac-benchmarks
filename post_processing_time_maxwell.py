@@ -7,7 +7,7 @@ filename            = 'maxwell3d'
 
 number_of_mpi_procs = [32*7,32*7*2,32*7*2**2,32*7*2**3,32*7*2**4]
 ncells          = [80]
-degrees         = [2,3,4,5]
+degrees         = [3,4,5]
 number_of_threads = 1
 
 timmings_bi_assembly     = np.zeros((len(ncells),len(degrees), len(number_of_mpi_procs)))
@@ -56,7 +56,7 @@ for i1,nc in enumerate(ncells):
                 T = np.load(results_folder+filename+'.npy', allow_pickle=True)
                 T = T.item()
                 timmings_bi_assembly_mth[i1,i2,i3]     = min(T['bilinear_form_assembly_time'],T.get('bilinear_form_assembly_time2', T['bilinear_form_assembly_time']))
-                timmings_time_integrator_mth[i1,i2,i3] = T['solution']
+#                timmings_time_integrator_mth[i1,i2,i3] = T['solution']
                 timmings_dot_p_mth[i1,i2,i3]           = T['dot_product_time']
             except:
                 timmings_bi_assembly_mth[i1,i2,i3] = np.nan
@@ -76,7 +76,7 @@ number_of_mpi_procs = np.array([32*7,32*7*2,32*7*2**2,32*7*2**3,32*7*2**4])
 
 #if not all(np.isnan(v) for v in timmings_bi_assembly.flatten()):
 #    print("="*45,"Timings of the Matrix Assembly of Time dependent Maxwell", "="*45)
-#    T = np.around(timmings_bi_assembly_mth, decimals=5)
+#    T = np.around(scaling_bi_assembly_mth, decimals=5)
 #    newT = []
 #    for i1,nc in enumerate(ncells):
 #        for i2,d in enumerate(degrees):
@@ -97,13 +97,13 @@ from matplotlib.legend_handler import HandlerLine2D
 colors = np.linspace(0, 1, len(degrees))
 colors = cm.rainbow(colors)
 line_styles = ['>-','o-','s-','v-']
-
+markers = ['>','o','s','v']
 from itertools import product
 
 titles = ['Matrix Assembly', 'Matrix Vector Product','Matrix Assembly', 'Matrix Vector Product']
 fnames = ['matrix_assembly_time_maxwell_strong_scaling', 'matrix_vector_product_time_maxwell_strong_scaling','matrix_assembly_time_maxwell_strong_scaling_multi_threading', 'matrix_vector_product_time_maxwell_strong_scaling_multi_threading']
-xaxist = [r'number of nodes', r'number of nodes',r'number of nodes',r'number of nodes']
-timings = [timmings_bi_assembly, timmings_dot_p,timmings_bi_assembly_mth, timmings_dot_p_mth]
+xaxist = [r'Number of nodes']*4
+timings = [[timmings_bi_assembly,timmings_bi_assembly_mth], [timmings_dot_p, timmings_dot_p_mth]]
 number_of_nodes = np.array([7*1,7*2,7*4,7*8,7*16])
 
 for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
@@ -113,15 +113,20 @@ for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
     for nc in range(len(ncells)):
         for p in range(degrees[0],degrees[-1]+1):
 
-            mask = np.isfinite(timings_i[nc,p-degrees[0]])
-            line, = ax.plot(number_of_nodes[mask], timings_i[nc,p-degrees[0]][mask], line_styles[nc],color=colors[p-degrees[0]])
+            mask = np.isfinite(timings_i[0][nc,p-degrees[0]])
+            line, = ax.plot(number_of_nodes[mask], timings_i[0][nc,p-degrees[0]][mask], line_styles[nc],color=colors[p-degrees[0]])
+
+            mask = np.isfinite(timings_i[1][nc,p-degrees[0]])
+            line, = ax.plot(number_of_nodes[mask], timings_i[1][nc,p-degrees[0]][mask], marker=markers[nc], linestyle='dashed', color=colors[p-degrees[0]])
 
         row = '$n_{{el}}={}^3$'.format(ncells[nc])
-        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[nc,degrees[0]][mask], line_styles[nc],color='k', label=row)
+        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0][nc,0][mask], line_styles[nc],color='k', label=row)
 
     for p in range(degrees[0],degrees[-1]+1):
-        row = '$p={}$'.format(p)
-        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0,degrees[0]][mask],color=colors[p-degrees[0]], label=row)
+        row = '$p={}$ (Pure MPI)'.format(p)
+        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0][0,p-degrees[0]][mask],color=colors[p-degrees[0]], label=row)
+        row = '$p={}$ (MPI+OpenMP)'.format(p)
+        line, = ax.plot(np.nan*number_of_nodes[mask], np.nan*timings_i[0][0,p-degrees[0]][mask],linestyle='dashed', color=colors[p-degrees[0]], label=row)
 
 
     box = ax.get_position()
@@ -129,7 +134,7 @@ for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
 
     # Put a legend to the right of the current axis
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    ax.set_xlabel( r'number of nodes', rotation='horizontal' )
+    ax.set_xlabel(xlabel, rotation='horizontal' )
     ax.set_ylabel( r'time [s]' )
     ax.set_xscale('log')
     ax.set_yscale('log')

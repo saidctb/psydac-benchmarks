@@ -1,4 +1,5 @@
 from pyccel.decorators import types
+import numpy as np
 @types("float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]",
        "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]",
        "float64[:,:,:,:]", "float64[:,:,:,:]", "float64[:,:,:,:]",
@@ -55,7 +56,7 @@ def assemble_matrix(global_test_basis_TE_0_1, global_test_basis_TE_0_2, global_t
     global_thread_size_1 = 1 + global_thread_ends_1[thread_coords_1] - global_thread_starts_1[thread_coords_1]
     global_thread_size_2 = 1 + global_thread_ends_2[thread_coords_2] - global_thread_starts_2[thread_coords_2]
     global_thread_size_3 = 1 + global_thread_ends_3[thread_coords_3] - global_thread_starts_3[thread_coords_3]
-    
+
     local_thread_starts_1 = array((0, int((1/2)*global_thread_size_1)))
     local_thread_starts_2 = array((0, int((1/2)*global_thread_size_2)))
     local_thread_starts_3 = array((0, int((1/2)*global_thread_size_3)))
@@ -67,6 +68,7 @@ def assemble_matrix(global_test_basis_TE_0_1, global_test_basis_TE_0_2, global_t
     local_test_basis_TE_0_1 = zeros((global_thread_size_1, 4, 2, 5), dtype='float64')
     local_test_basis_TE_1_1 = zeros((global_thread_size_1, 5, 2, 5), dtype='float64')
     local_test_basis_TE_2_1 = zeros((global_thread_size_1, 5, 2, 5), dtype='float64')
+    print(local_test_basis_TE_0_1.shape, global_test_basis_TE_0_1.shape, global_test_basis_TE_0_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:2,:].shape)
     local_test_basis_TE_0_1[:,:,:,:] = global_test_basis_TE_0_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:2,:]
     local_test_basis_TE_1_1[:,:,:,:] = global_test_basis_TE_1_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:2,:]
     local_test_basis_TE_2_1[:,:,:,:] = global_test_basis_TE_2_1[global_thread_starts_1[thread_coords_1]:1 + global_thread_ends_1[thread_coords_1],:,:2,:]
@@ -126,7 +128,7 @@ def assemble_matrix(global_test_basis_TE_0_1, global_test_basis_TE_0_2, global_t
     local_span_TE_0_3[:] = global_span_TE_0_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3]]
     local_span_TE_1_3[:] = global_span_TE_1_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3]]
     local_span_TE_2_3[:] = global_span_TE_2_3[global_thread_starts_3[thread_coords_3]:1 + global_thread_ends_3[thread_coords_3]]
-
+    raise
     for local_i_element_1 in range(0, 2, 1):
         for local_i_element_2 in range(0, 2, 1):
             for local_i_element_3 in range(0, 2, 1):

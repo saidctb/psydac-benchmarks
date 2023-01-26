@@ -134,37 +134,6 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
     # store bilinear forms assembly timing
     infos['bilinear_form_assembly_time'] = tt
 
-    b   = l1_h.assemble(t=0.)
-    out = b.copy()
-    M1.dot(b)
-    b.ghost_regions_in_sync = False
-    st  = 0
-    for i in range(200):
-        comm.Barrier()
-        t1 = time()
-        M1.dot(b, out=out)
-        t2 = time()
-        b.ghost_regions_in_sync = False
-        st += t2-t1
-
-    tt = comm.reduce(st/200,op=MPI.MAX)
-
-    # store mass matrix dot product timing
-    infos['dot_product_time'] = tt
-
-    st = 0
-    for i in range(20):
-        comm.Barrier()
-        t1 = time()
-        b.update_ghost_regions()
-        t2 = time()
-        st += t2-t1
-
-    tt = comm.reduce(st/20,op=MPI.MAX)
-
-    # store communication timing
-    infos['dot_product_communication_time'] = tt
-
     if comm.rank == 0:
         name = (infos['title'],) + infos['ncells'] + infos['degree'] + (comm.size, infos['number_of_threads'])
         name = '_'.join([str(i) for i in name])

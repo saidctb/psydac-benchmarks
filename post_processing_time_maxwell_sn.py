@@ -4,7 +4,7 @@ results_folder = 'results/'
 filename       = 'maxwell3d'
 
 number_of_mpi_procs = 7
-ncells          = [52,64]
+ncells          = [64]
 degrees         = [3,4,5]
 number_of_threads = np.array([1,2,4,8,16])
 timmings_bi_assembly     = np.zeros((len(ncells),len(degrees), len(number_of_threads)))
@@ -22,26 +22,23 @@ for i1,nc in enumerate(ncells):
                 T = np.load(results_folder+filename+'.npy', allow_pickle=True)
                 T = T.item()
                 timmings_bi_assembly[i1,i2,i3]     = T['bilinear_form_assembly_time']
-                timmings_time_integrator[i1,i2,i3] = T['solution']
+#                timmings_time_integrator[i1,i2,i3] = T['solution']
                 timmings_dot_p[i1,i2,i3]           = T['dot_product_time']
             except:
                 timmings_bi_assembly[i1,i2,i3] = np.nan
-                timmings_time_integrator[i1,i2,i3] = np.nan
                 timmings_dot_p[i1,i2,i3] = np.nan
-
 
         k = [j for j in range(len(number_of_threads)) if not np.isnan(timmings_bi_assembly[i1,i2,j])] + [0]
         nn = [np.nan]*k[0] + [2**(i-k[0]) for i in range(k[0],len(number_of_threads))]
         scaling_bi_assembly[i1,i2,:]     = timmings_bi_assembly[i1,i2,k[0]]/timmings_bi_assembly[i1,i2,:]/nn
-        scaling_time_integrator[i1,i2,:] = timmings_time_integrator[i1,i2,k[0]]/timmings_time_integrator[i1,i2,:]/nn
         scaling_dot_p[i1,i2,:]           = timmings_dot_p[i1,i2,k[0]]/timmings_dot_p[i1,i2,:]/nn
 #====================================================================================================
 #from tabulate import tabulate
 #headers = [""] + [str(nt) for nt in number_of_threads]
 
-#if not all(np.isnan(v) for v in scaling_dot_p.flatten()):
+#if not all(np.isnan(v) for v in timmings_bi_assembly.flatten()):
 #    print("="*45,"Timings of the Matrix Assembly of Time dependent Maxwell", "="*45)
-#    T = np.around(scaling_bi_assembly, decimals=2)
+#    T = np.around(scaling_bi_assembly, decimals=4)
 #    newT = []
 #    for i1,nc in enumerate(ncells):
 #        for i2,d in enumerate(degrees):
@@ -65,7 +62,7 @@ colors = cm.rainbow(colors)
 
 titles = ['Matrix Assembly', 'Matrix Vector Product']
 fnames = ['matrix_assembly_time_maxwell_single_node_multi_threading', 'matrix_vector_product_time_maxwell_single_node_multi_threading']
-xaxist = [r'number of threads', r'number of threads']
+xaxist = [r'Number of OpenMP threads per node', r'Number of OpenMP threads per node']
 timings = [timmings_bi_assembly, timmings_dot_p]
 
 line_styles = ['>-','o-','s-','v-']
@@ -93,7 +90,7 @@ for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
 
         # Put a legend to the right of the current axis
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        ax.set_xlabel( xaxist, rotation='horizontal' )
+        ax.set_xlabel( xlabel, rotation='horizontal' )
         ax.set_ylabel( r'time [s]' )
         ax.set_xscale('log')
         ax.set_yscale('log')

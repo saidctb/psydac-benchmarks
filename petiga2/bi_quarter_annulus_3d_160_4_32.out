@@ -8,3 +8,4 @@ Partition - nel: sum=4096000 min=128000 max=128000 max/min=1.
 Elapsed time for matrix assembly: 3026.049934 seconds
 
 Elapsed time for dot product: 3.265464 seconds
+

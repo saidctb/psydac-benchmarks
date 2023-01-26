@@ -106,11 +106,7 @@ def run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, 
     # store bilinear forms assembly timing
     infos['bilinear_form_assembly_time2'] = tt
 
-
-    if comm.rank == 0:
-        name = (infos['title'],) + infos['ncells'] + infos['degree'] + (comm.size, infos['number_of_threads'])
-        name = '_'.join([str(i) for i in name])
-        np.save('results/' + name, infos)
+    print(infos)
 
 
     return infos

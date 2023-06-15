@@ -1,5 +1,7 @@
 import numpy as np
 import re
+import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 22})
 
 results_folder = 'results/'
 petiga_results_folder = 'petiga2/'
@@ -125,25 +127,32 @@ for i1,p in enumerate(problems):
 #            print(tabulate(newT1, headers=headers, tablefmt="latex"))
 #            print(tabulate(newT2, headers=headers, tablefmt="latex"))
 #            print("\n")
+#raise
+#from tabulate import tabulate
+#headers = [""] + [str(nn) for nn in number_of_nodes]
 
-from tabulate import tabulate
-headers = [""] + [str(nn) for nn in number_of_nodes]
+#timmings_dot_p_mth[0,0] = np.array([[[0.00943, 0.00495, 0.00266, 0.00164, 0.00091, 0.00054, 0.00042],
+#        [0.01851, 0.00966, 0.00513, 0.00294, 0.00163, 0.0009 , 0.00059],
+#        [0.04284, 0.02241, 0.01189, 0.00643, 0.00349, 0.00217, 0.00111]],
 
-for i1,p in enumerate(problems):
-    for i2,mapping in enumerate(mappings[i1]):
-        if all(np.isnan(v) for v in timmings_bi_assembly[i1,i2].flatten()):continue
-        mapping = ('{} analytical mapping' if mapping[1] else '{} Nurbs mapping').format(mapping[0])
-        print("="*45,"Timings of the Matrix Assembly of {} with the {}".format(p,mapping), "="*45)
-        T = np.around(timmings_bi_assembly_pet, decimals=5)
-        newT = []
-        for i3,nc in enumerate(ncells):
-            for i4,d in enumerate(degrees):
-                newT.append(["nc = {} ** 3 , p = {}".format(nc,d)] +  T[i3,i4].tolist())
-            newT.append(["   "]*len(T[0]))
-        
-        print(tabulate(newT, headers=headers, tablefmt="grid"))
-        print("\n")
-raise
+#       [[0.01827, 0.0094 , 0.00497, 0.00292, 0.00159, 0.00093, 0.00075],
+#        [0.03596, 0.01847, 0.00964, 0.00532, 0.00288, 0.00161, 0.001  ],
+#        [0.08815, 0.04648, 0.02309, 0.01191, 0.00634, 0.00332, 0.00187]]])
+#for i1,p in enumerate(problems):
+#    for i2,mapping in enumerate(mappings[i1]):
+#        if all(np.isnan(v) for v in timmings_bi_assembly[i1,i2].flatten()):continue
+#        mapping = ('{} analytical mapping' if mapping[1] else '{} Nurbs mapping').format(mapping[0])
+#        print("="*45,"Timings of the Matrix Assembly of {} with the {}".format(p,mapping), "="*45)
+#        T = np.around(timmings_dot_p_mth[i1,i2], decimals=5)
+#        newT = []
+#        for i3,nc in enumerate(ncells):
+#            for i4,d in enumerate(degrees):
+#                newT.append(["nc = {} ** 3 , p = {}".format(nc,d)] +  T[i3,i4].tolist())
+#            newT.append(["   "]*len(T[0]))
+#        
+#        print(tabulate(newT, headers=headers, tablefmt="grid"))
+#        print("\n")
+#raise
 #====================================================================================================
 import numpy as np
 import matplotlib.pyplot as plt
@@ -170,7 +179,7 @@ timings = [[timmings_bi_assembly[0,0], timmings_bi_assembly_mth[0,0]], [timmings
 number_of_nodes = np.array([1,2,4,8,16,32,64])
 
 for title,fname,timings_i, xlabel in zip(titles, fnames, timings,xaxist):
-    fig = plt.figure(figsize=(10,15))
+    fig = plt.figure(figsize=(15,8))
     ax = fig.add_subplot(1, 1, 1)
     ax.plot(number_of_nodes,[5*np.nanmax(timings_i[1])/2**d for d in range(len(number_of_mpi_procs))], color='black', linestyle='dashed', label='perfect scaling')
     for nc in range(len(ncells)):

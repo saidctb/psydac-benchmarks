@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 22})
 
 results_folder = 'results/'
 filename       = 'maxwell3d'
@@ -67,7 +69,7 @@ timings = [timmings_bi_assembly, timmings_dot_p]
 
 line_styles = ['>-','o-','s-','v-']
 for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
-    fig = plt.figure(figsize=(10,17))
+    fig = plt.figure(figsize=(15,8))
 #    fig.suptitle(title)
     ax = fig.add_subplot(1, 1, 1)
     ax.plot(number_of_threads,[5*np.nanmax(timings_i)/2**d for d in range(len(number_of_threads))], color='black', linestyle='dashed', label='perfect scaling')

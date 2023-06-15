@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 22})
 
 results_folder = 'results/'
 filename       = 'maxwell3d'
@@ -96,7 +98,7 @@ timings = [[timmings_bi_assembly,timmings_bi_assembly_mth], [timmings_dot_p,timm
 
 
 for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
-    fig = plt.figure(figsize=(10,15))
+    fig = plt.figure(figsize=(15,7))
     ax = fig.add_subplot(1, 1, 1)
     for nc in range(len(ncells)):
         for p in range(degrees[0],degrees[-1]+1):

@@ -1,5 +1,6 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 22})
 
 petiga_assembly_32 = np.array([[2.812678, 1.555927, 0.826999, 0.449456, 0.240059, 0.12946],
                      [94.812609, 48.436335, 24.678121, 12.678361, 6.68989, 3.44336],
@@ -95,31 +96,30 @@ for i1,p in enumerate(problems):
                         timmings_bi_assembly_mth[i1,i2,i3,i4,i5] = np.nan
                         timmings_dot_p_mth[i1,i2,i3,i4,i5] = np.nan
 
-
                 k = [j for j in range(len(number_of_mpi_procs)) if not np.isnan(timmings_bi_assembly_mth[i1,i2,i3,i4,j])] + [0]
                 nn = [np.nan]*k[0] + [2**(i-k[0]) for i in range(k[0],len(number_of_mpi_procs))]
                 scaling_bi_assembly_mth[i1,i2,i3,i4,:] = timmings_bi_assembly_mth[i1,i2,i3,i4,k[0]]/timmings_bi_assembly_mth[i1,i2,i3,i4,:]/nn
                 scaling_dot_p_mth[i1,i2,i3,i4,:]       = timmings_dot_p_mth[i1,i2,i3,i4,k[0]]/timmings_dot_p_mth[i1,i2,i3,i4,:]/nn
 
 #########################################################################################################
-from tabulate import tabulate
-headers = [""] + [str(np*nt) for np,nt in zip(number_of_nodes, number_of_threads)]
+#from tabulate import tabulate
+#headers = [""] + [str(np*nt) for np,nt in zip(number_of_nodes, number_of_threads)]
 
-for i1,p in enumerate(problems):
-    for i2,mapping in enumerate(mappings[i1]):
-        if all(np.isnan(v) for v in timmings_bi_assembly[i1,i2].flatten()):continue
-        mapping = ('{} analytical mapping' if mapping[1] else '{} Nurbs mapping').format(mapping[0])
-        print("="*45,"Timings of the Matrix Assembly of {} with the {}".format(p,mapping), "="*45)
-        T = np.around(petiga_dot[i1,i2], decimals=5)
-        newT = []
-        for i3,nc in enumerate(ncells):
-            for i4,d in enumerate(degrees):
-                newT.append(["nc = {} ** 3 , p = {}".format(nc,d)] +  T[i3,i4].tolist())
-            newT.append(["   "]*len(T[0]))
-        
-        print(tabulate(newT, headers=headers, tablefmt="grid"))
-        print("\n")
-raise
+#for i1,p in enumerate(problems):
+#    for i2,mapping in enumerate(mappings[i1]):
+#        if all(np.isnan(v) for v in timmings_bi_assembly[i1,i2].flatten()):continue
+#        mapping = ('{} analytical mapping' if mapping[1] else '{} Nurbs mapping').format(mapping[0])
+#        print("="*45,"Timings of the Matrix Assembly of {} with the {}".format(p,mapping), "="*45)
+#        T = np.around(petiga_dot[i1,i2], decimals=5)
+#        newT = []
+#        for i3,nc in enumerate(ncells):
+#            for i4,d in enumerate(degrees):
+#                newT.append(["nc = {} ** 3 , p = {}".format(nc,d)] +  T[i3,i4].tolist())
+#            newT.append(["   "]*len(T[0]))
+#        
+#        print(tabulate(newT, headers=headers, tablefmt="grid"))
+#        print("\n")
+#raise
 #from tabulate import tabulate
 #headers = [""] + ['$p = {}$'.format(d) for d in degrees]
 #paralle_ef = [[petiga_assembly_scaling]]
@@ -132,7 +132,7 @@ raise
 #            T1 = np.around(paralle_ef[0][0], decimals=4)
 #            newT1 = []
 #            for i3,nc in enumerate(ncells):
-#                newT1.append(["$ n_{{el}} = {}^3 $".format(nc)]+ ['{}%'.format(int(T1[i3,i4][-1]*10000)/100) for i4,d in enumerate(degrees)])
+#                newT1.append(["$ n_{{el}} = {}^3 $".format(nc)]+ ['{}%'.format(int(T1[0,i3,i4][-1]*10000)/100) for i4,d in enumerate(degrees)])
 
 #            print(tabulate(newT1, headers=headers, tablefmt="latex"))
 #            print("\n")
@@ -153,13 +153,13 @@ from itertools import product
 titles = ['Matrix Assembly', 'Matrix Vector Product','Matrix Assembly', 'Matrix Vector Product']
 fnames  = ['matrix_assembly_biharmonic_strong_scaling_single_node', 'matrix_vector_product_biharmonic_strong_scaling_single_node','matrix_assembly_biharmonic_strong_scaling_single_node_multi_threading', 'matrix_vector_product_biharmonic_strong_scaling_single_node_multi_threading']
 xaxist = [r'Number of processes or threads']*4
-timings = [[timmings_bi_assembly[0,0], timmings_bi_assembly_mth[0,0], petiga_assembly], [timmings_dot_p[0,0], timmings_dot_p_mth[0,0], petiga_dot]]
+timings = [[timmings_bi_assembly[0,0], timmings_bi_assembly_mth[0,0], petiga_assembly[0,0]], [timmings_dot_p[0,0], timmings_dot_p_mth[0,0], petiga_dot[0,0]]]
 number_of_mpi_procs = np.array([1,2,4,8,16,32])
 
 for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
-    fig = plt.figure(figsize=(10,15))
+    fig = plt.figure(figsize=(15,8))
     ax = fig.add_subplot(1, 1, 1)
-    ax.plot(number_of_mpi_procs,[5*np.nanmax(timings_i[1])/2**d for d in range(len(number_of_mpi_procs))], color='black', linestyle='dashed', label='perfect scaling')
+    ax.plot(number_of_mpi_procs,[5*np.nanmax(timings_i)/2**d for d in range(len(number_of_mpi_procs))], color='black', linestyle='dashed', label='perfect scaling')
     for nc in range(len(ncells)):
         for p in range(degrees[0],degrees[-1]+1):
 

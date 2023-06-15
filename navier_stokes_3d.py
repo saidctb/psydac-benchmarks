@@ -109,7 +109,7 @@ def run_time_dependent_navier_stokes_2d(domain, ncells, degree, multiplicity, bo
     Fl = lambda u,p: Re**-1*inner(grad(u), grad(v)) - div(u)*q - p*div(v) + 1e-10*p*q
     F  = lambda u,p: dot(Transpose(grad(u))*u,v) + Fl(u,p)
 
-    l = LinearForm((v, q), int_0(dot(u,v)-dot(u0,v) + dt/2 * (F(u,p) + F(u0,p0)) ) -int_1(dt*dot(f,v)))
+    l = LinearForm((v, q), int_0(dot(u,v)-dot(u0,v) + dt * (F(u,p) + F(u0,p0)) ) -int_1(dt*dot(f,v)))
     a = linearize(l, (u,p), trials=(du, dp))
 
     equation  = find((du, dp), forall=(v, q), lhs=a((du, dp), (v, q)), rhs=l(v, q), bc=bc)

@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 22})
 
 results_folder = 'results/'
 number_of_mpi_procs = [1*35,2*35,4*35,8*35,16*35,32*35,64*35,128*35]
@@ -107,7 +109,7 @@ timings = [[timmings_bi_assembly,timmings_bi_assembly_mth], [timmings_dot_p, tim
 number_of_nodes = np.array([7*1,7*2,7*4,7*8,7*16])
 
 for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
-    fig = plt.figure(figsize=(10,15))
+    fig = plt.figure(figsize=(15,8))
     ax = fig.add_subplot(1, 1, 1)
     ax.plot(number_of_nodes,[5*np.nanmax(timings_i)/2**d for d in range(len(number_of_nodes))], color='black', linestyle='dashed', label='perfect scaling')
     for nc in range(len(ncells)):

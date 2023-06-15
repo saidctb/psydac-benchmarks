@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 22})
 
 results_folder = 'results/'
 f       = 'biharmonic_3d'
@@ -87,7 +89,7 @@ xaxist = [r'number of nodes', r'number of nodes']
 timings = [[timmings_bi_assembly, timmings_bi_assembly_mth], [timmings_dot_p, timmings_dot_p_mth]]
 nthreads = np.array([nn*nt*nth for nn,nt,nth in zip(nnodes, ntasks_per_node, nthreads)])
 for title,fname,timings_i,xlabel in zip(titles, fnames, timings,xaxist):
-    fig = plt.figure(figsize=(10,15))
+    fig = plt.figure(figsize=(15,7))
     ax = fig.add_subplot(1, 1, 1)
     for nc in range(len(ncells)):
         for p in range(degrees[0],degrees[-1]+1):

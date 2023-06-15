@@ -413,7 +413,7 @@ if __name__ == '__main__':
 
     backend = PSYDAC_BACKEND_GPYCCEL
 
-    run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, comm, cg_niter,store=store)
+#    run_maxwell_3d(Eex, Bex, J, domain, ncells, degree,  dt, niter, T, backend, comm, cg_niter,store=store)
 
     if store:
         Pm = PostProcessManager(
